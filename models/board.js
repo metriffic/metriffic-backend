@@ -1,0 +1,18 @@
+'use strict';
+module.exports = (sequelize, DataTypes) => {
+  const Board = sequelize.define('Board', {
+
+    hostname: {
+        type: DataTypes.STRING,
+        allowNull: false
+    },
+    spec: {
+        type: DataTypes.STRING,
+        allowNull: true
+    },
+  }, { timestamps: false });
+  Board.associate = function (models) {
+    Board.belongsTo(models.Platform, { foreignKey: 'platformId' })
+  }
+  return Board;
+};
