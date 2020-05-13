@@ -14,7 +14,7 @@ module.exports = {
       },
       boardId: {
         type: Sequelize.INTEGER.UNSIGNED,
-        allowNull: false
+        allowNull: true
       },
       sessionId: {
         type: Sequelize.INTEGER.UNSIGNED,

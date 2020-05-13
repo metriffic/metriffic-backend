@@ -12,7 +12,7 @@ module.exports = {
         allowNull: false,
         type: Sequelize.STRING
       },
-      spec: {
+      description: {
         allowNull: true,
         type: Sequelize.STRING
       },

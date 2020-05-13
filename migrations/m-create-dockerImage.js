@@ -1,7 +1,7 @@
 'use strict';
 module.exports = {
   up: (queryInterface, Sequelize) => {
-    return queryInterface.createTable('Boards', {
+    return queryInterface.createTable('DockerImages', {
       id: {
         allowNull: false,
         autoIncrement: true,
@@ -12,7 +12,7 @@ module.exports = {
         type: Sequelize.INTEGER.UNSIGNED,
         allowNull: false
       },
-      hostname: {
+      name: {
           allowNull: false,
           type: Sequelize.STRING
       },
@@ -23,6 +23,6 @@ module.exports = {
     });
   },
   down: (queryInterface, Sequelize) => {
-    return queryInterface.dropTable('Boards');
+    return queryInterface.dropTable('DockerImages');
   }
 };

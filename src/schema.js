@@ -5,26 +5,35 @@ const typeDefs = gql`
     type Platform {
         id: Int!
         name: String!
-        spec: String
+        description: String
         boards: [Board!]
+        dockerImages: [DockerImage!]
         sessions: [Session!]!
       }
 
     type Board {
         id: Int!
         hostname: String!
-        spec: String
+        description: String
+        platform: Platform!
+    }
+
+    type DockerImage {
+        id: Int!
+        name: String!
+        description: String
         platform: Platform!
     }
 
     type Session {
         id: Int!
         name: String!
-        job_command: String!
+        command: String!
         max_jobs: Int!
         jobs: [Job!]!
         datasets: String!
         platform: Platform!
+        dockerImage: DockerImage!
       }
 
     type Job {
@@ -34,15 +43,22 @@ const typeDefs = gql`
         session: Session!
     }
 
-
+    type Subscription {    
+        sessionAdded: Session!  
+        boardAdded: Board!
+        dockerImageAdded: DockerImage!
+        platformAdded: Platform!
+    }
 
     type Query {
         platform(id: Int!): Platform
         board(id: Int!): Board
+        dockerImage(id: Int!): DockerImage
         session(id: Int!): Session
         job(id: Int!): Job
 
         allPlatforms: [Platform!]!
+        allDockerImages(platformId: Int!): [DockerImage!]
         allSessions(platformId: Int!): [Session!]
         allBoards(platformId: Int!): [Board!]
         allJobs(sessionsId: Int!): [Job!]
@@ -51,20 +67,25 @@ const typeDefs = gql`
     type Mutation {
         createPlatform(
             name: String!,
-            spec: String): Platform!
+            description: String): Platform!
         createBoard(
             platformId: Int!
             hostname: String!
-            spec: String): Board!
+            description: String): Board!
+        createDockerImage(
+            platformId: Int!
+            name: String!
+            description: String): DockerImage!
         createSession(
             platformId: Int!
+            dockerImageId: Int!
             name: String!
             command: String!
             datasets: String!
             max_jobs: Int): Session!
         createJob(
             sessionId: Int!
-            boardId: Int! 
+            boardId: Int 
             dataset: String!): Job!
       }
 `

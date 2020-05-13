@@ -21,11 +21,15 @@ module.exports = {
         allowNull: false,
         type: Sequelize.STRING
       },
-      job_command: {
+      command: {
         allowNull: true,
         type: Sequelize.STRING
       },
       platformId: {
+        type: Sequelize.INTEGER.UNSIGNED,
+        allowNull: false
+      },
+      dockerImageId: {
         type: Sequelize.INTEGER.UNSIGNED,
         allowNull: false
       },

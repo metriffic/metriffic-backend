@@ -20,14 +20,15 @@ module.exports = (sequelize, DataTypes) => {
         type: DataTypes.STRING, // json string
         allowNull: false,
     },
-    job_command: {
+    command: {
         type: DataTypes.STRING, // json string
         allowNull: false,
     }
   },  { timestamps: false });
   Session.associate = function (models) {
     Session.hasMany(models.Job);
-    Session.belongsTo(models.Platform,  { foreignKey: 'platformId' });
+    Session.belongsTo(models.DockerImage, { foreignKey: 'dockerImageId' });
+    Session.belongsTo(models.Platform, { foreignKey: 'platformId' });
   }
   return Session;
 };

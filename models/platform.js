@@ -5,13 +5,14 @@ module.exports = (sequelize, DataTypes) => {
       type: DataTypes.STRING,
       allowNull: false
     },
-    spec: {
+    description: {
         type: DataTypes.STRING,
         allowNull: true
     },
   }, { timestamps: false });
   Platform.associate = function (models) {
     Platform.hasMany(models.Board)
+    Platform.hasMany(models.DockerImage)
   }
   return Platform;
 };

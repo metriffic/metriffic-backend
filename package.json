@@ -1,5 +1,5 @@
 {
-  "name": "graphql-recipe-server",
+  "name": "metriffic-backend",
   "version": "1.0.0",
   "main": "index.js",
   "license": "MIT",
@@ -12,6 +12,21 @@
     "sqlite3": "^4.2.0"
   },
   "scripts": {
-   "reset_db": "./cleanup.sh"
-  }
+    "reset_db": "./cleanup.sh",
+    "start": "nodemon --exec babel-node application.js"
+  },
+  "devDependencies": {
+    "@babel/cli": "^7.8.4",
+    "@babel/core": "^7.9.6",
+    "@babel/node": "^7.8.7",
+    "@babel/preset-env": "^7.9.6",
+    "nodemon": "^2.0.3"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://metriffic-vazk@bitbucket.org/metriffic-team/metriffic-backend.git"
+  },
+  "author": "",
+  "homepage": "https://bitbucket.org/metriffic-team/metriffic-backend#readme",
+  "description": ""
 }

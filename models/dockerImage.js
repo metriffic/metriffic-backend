@@ -1,7 +1,7 @@
 'use strict';
 module.exports = (sequelize, DataTypes) => {
-  const Board = sequelize.define('Board', {
-    hostname: {
+  const DockerImage = sequelize.define('DockerImage', {
+    name: {
         type: DataTypes.STRING,
         allowNull: false
     },
@@ -10,8 +10,8 @@ module.exports = (sequelize, DataTypes) => {
         allowNull: true
     },
   }, { timestamps: false });
-  Board.associate = function (models) {
-    Board.belongsTo(models.Platform, { foreignKey: 'platformId' })
+  DockerImage.associate = function (models) {
+    DockerImage.belongsTo(models.Platform, { foreignKey: 'platformId' })
   }
-  return Board;
+  return DockerImage;
 };
