@@ -2,6 +2,14 @@ const { gql } = require('apollo-server')
 
 const typeDefs = gql`
 
+    type User {
+        id: ID!
+        email: String!
+        token: String!
+        username: String!
+        createdAt: String!
+    }
+
     type Platform {
         id: Int!
         name: String!
@@ -9,7 +17,7 @@ const typeDefs = gql`
         boards: [Board!]
         dockerImages: [DockerImage!]
         sessions: [Session!]!
-      }
+    }
 
     type Board {
         id: Int!
@@ -34,7 +42,7 @@ const typeDefs = gql`
         datasets: String!
         platform: Platform!
         dockerImage: DockerImage!
-      }
+    }
 
     type Job {
         id: Int!
@@ -51,6 +59,7 @@ const typeDefs = gql`
     }
 
     type Query {
+        users: [User]!
         platform(id: Int!): Platform
         board(id: Int!): Board
         dockerImage(id: Int!): DockerImage
@@ -65,6 +74,14 @@ const typeDefs = gql`
     }
 
     type Mutation {
+        register(
+            username: String!
+            email: String!
+            password: String!
+            cpassword: String!): User!
+        login(
+            username: String!
+            password: String!): User!
         createPlatform(
             name: String!,
             description: String): Platform!
