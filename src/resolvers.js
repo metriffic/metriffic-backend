@@ -1,20 +1,17 @@
 const bcrypt = require('bcryptjs')
 const jwt = require('jsonwebtoken')
 
-const { PubSub } = require('apollo-server')
 const { UserInputError } = require('apollo-server')
 
 const { validateRegisterInput, validateLoginInput } = require('./validators')
 const { checkAuth } = require('./check_auth')
 const { SECRET_KEY } = require('../config')
 
-const pubsub = new PubSub();
-
-const SESSION_ADDED     = 'SESSION_ADDED';
-const BOARD_ADDED       = 'BOARD_ADDED';
-const DOCKERIMAGE_ADDED = 'DOCKERIMAGE_ADDED';
-const PLATFORM_ADDED    = 'PLATFORM_ADDED';
-
+const SUBS_USER        = 'USER';
+const SUBS_SESSION     = 'SESSION';
+const SUBS_BOARD       = 'BOARD';
+const SUBS_DOCKERIMAGE = 'DOCKERIMAGE';
+const SUBS_PLATFORM    = 'PLATFORM';
 function generateToken(user) {
     return  jwt.sign({
                 id: user.id,
@@ -25,22 +22,26 @@ function generateToken(user) {
 
 const resolvers = {
     Subscription: {    
-        sessionAdded: {      
-            // Additional event labels can be passed to asyncIterator creation      
-            subscribe: () => pubsub.asyncIterator(SESSION_ADDED),
-        },  
-        boardAdded: {      
-            // Additional event labels can be passed to asyncIterator creation      
-            subscribe: () => pubsub.asyncIterator(BOARD_ADDED),
-        },  
-        dockerImageAdded: {      
-            // Additional event labels can be passed to asyncIterator creation      
-            subscribe: () => pubsub.asyncIterator(DOCKERIMAGE_ADDED),
-        },  
-        platformAdded: {
+        subsUser: {
             // Additional event labels can be passed to asyncIterator creation
-            subscribe: () => pubsub.asyncIterator(PLATFORM_ADDED),
+            subscribe: (root, args, { pubsub }) => pubsub.asyncIterator(SUBS_USER),
         },  
+        subsSession: {      
+            // Additional event labels can be passed to asyncIterator creation      
+            subscribe: (root, args, { pubsub }) => pubsub.asyncIterator(SUBS_SESSION),
+        },  
+        subsBoard: {      
+            // Additional event labels can be passed to asyncIterator creation      
+            subscribe: (root, args, { pubsub }) => pubsub.asyncIterator(SUBS_BOARD),
+        },  
+        subsDockerImage: {      
+            // Additional event labels can be passed to asyncIterator creation      
+            subscribe: (root, args, { pubsub }) => pubsub.asyncIterator(SUBS_DOCKERIMAGE),
+        },  
+        subsPlatform: {
+            // Additional event labels can be passed to asyncIterator creation
+            subscribe: (root, args, { pubsub }) => pubsub.asyncIterator(SUBS_PLATFORM),
+        }, 
     },
 
     Query: {
@@ -64,7 +65,7 @@ const resolvers = {
             return models.Job.findByPk(id)
         },
         async allPlatforms (root, args, { req, models }) {
-            const user = checkAuth(req)
+            //const user = checkAuth(req)
             return models.Platform.findAll()
         },
         async allBoards (root, { platformId }, { models }) {
@@ -115,18 +116,20 @@ const resolvers = {
                 }                
                 const token = generateToken(user);
                 user.token = token;
+                pubsub.publish(SUBS_USER, { subsUser: { mutation: 'LOGGEDIN', data: user }});
                 return user;
-            })
+            });
         },
-        async register(root, { username, email, password, cpassword }, { models }) {
+        async register(root, { username, email, password, cpassword }, { models, pubsub }) {
 
             const {errors, valid} = validateRegisterInput(username, email, password, cpassword);
             if(!valid) {
                 throw new UserInputError('Registration error', {errors});
             }
 
-            return models.User.findOne({where: {username:username}})
-            .then(user => {
+            return models.User.findOne({
+                where: { username: username }
+            }).then(user => {
                 if (user) {
                     throw new UserInputError('Username is taken', {
                         errors : {
@@ -148,40 +151,55 @@ const resolvers = {
                 const token = generateToken(ret);
                 const user = ret.get();
                 user.token = token;
+                pubsub.publish(SUBS_USER, { subsUser: { mutation: 'ADDED', data: user }});
                 return user;
-            })
+            });
         },
-
-        async createPlatform (root, { name, description }, { models }) {
+        async unregister(root, { username }, { models, pubsub }) {
+            //var user = null;
+            return models.User.findOne({
+                where: { username: username }
+            }).then(ret => {
+                //user = ret.get();
+                return models.User.destroy({
+                    where: {username: username}
+                }).then(() => {
+                    const user = ret.get();
+                    pubsub.publish(SUBS_USER, { subsUser: { mutation: 'DELETED', data: user }});
+                    return user;
+                });
+            }); 
+        },
+        async createPlatform (root, { name, description }, { models, pubsub }) {
             return models.Platform.create({
                 name,
                 description,
             }).then(ret => {
-                pubsub.publish(PLATFORM_ADDED, {platformAdded: ret.get()});
+                pubsub.publish(SUBS_PLATFORM, { subsPlatform: { mutation: 'ADDED', data: ret.get() }});
                 return ret;
             }); 
         },
-        async createBoard (root, { platformId, hostname, description }, { models }) {
+        async createBoard (root, { platformId, hostname, description }, { models, pubsub }) {
             return models.Board.create({ 
                     platformId, 
                     hostname, 
                     description 
                 }).then(ret => {
-                    pubsub.publish(BOARD_ADDED, {boardAdded: ret.get()});
+                    pubsub.publish(SUBS_BOARD, { subsBoard: { mutation: 'ADDED', data: ret.get() }});
                     return ret;
                 });            
         },
-        async createDockerImage (root, { platformId, name, description }, { models }) {
+        async createDockerImage (root, { platformId, name, description }, { models, pubsub }) {
             return models.DockerImage.create({ 
                     platformId, 
                     name, 
                     description 
                 }).then(ret => {
-                    pubsub.publish(DOCKERIMAGE_ADDED, {dockerImageAdded: ret.get()});
+                    pubsub.publish(SUBS_DOCKERIMAGE, { subsDockerImage: { mutation: 'ADDED', data: ret.get() }});
                     return ret;
                 });            
         },
-        async createSession (root, { platformId, dockerImageId, name, command, datasets, max_jobs }, { models }) {
+        async createSession (root, { platformId, dockerImageId, name, command, datasets, max_jobs }, { models, pubsub }) {
             return models.Session.create({ 
                     platformId, 
                     dockerImageId,
@@ -190,7 +208,8 @@ const resolvers = {
                     datasets,
                     max_jobs
                 }).then(ret => {
-                    pubsub.publish(SESSION_ADDED, {sessionAdded: ret.get()});
+                    pubsub.publish(SUBS_SESSION, { subsSession: { mutation: 'ADDED', data: ret.get() }});
+
                     return ret;
                 }); 
         },

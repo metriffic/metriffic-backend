@@ -1,16 +1,20 @@
-const { ApolloServer } = require('apollo-server')
 const typeDefs = require('./src/schema')
 const resolvers = require('./src/resolvers')
 const models = require('./models')
+const { PubSub, ApolloServer } = require('apollo-server')
+const { HOSTNAME, PORT } = require('./config')
+
+const pubsub = new PubSub();
 
 const server = new ApolloServer({
   typeDefs,
   resolvers,
-  context: ({req}) => ({req, models}) 
+  context: ({req}) => ({
+              req, 
+              models,
+              pubsub
+            }) 
 })
-
-const HOSTNAME = "localhost";
-const PORT = 4000;
 
 server
   .listen(PORT)

@@ -51,11 +51,33 @@ const typeDefs = gql`
         session: Session!
     }
 
+    type UserSubsPayload {   
+        mutation: String!
+        data: User!
+    }
+    type SessionSubsPayload {   
+        mutation: String!
+        data: Session!
+    }   
+    type BoardSubsPayload {   
+        mutation: String!
+        data: Board!
+    }
+    type DockerImageSubsPayload {   
+        mutation: String!
+        data: DockerImage!
+    }
+    type PlatformSubsPayload {   
+        mutation: String!
+        data: Platform!
+    }
+
     type Subscription {    
-        sessionAdded: Session!  
-        boardAdded: Board!
-        dockerImageAdded: DockerImage!
-        platformAdded: Platform!
+        subsUser: UserSubsPayload!
+        subsSession: SessionSubsPayload!  
+        subsBoard: BoardSubsPayload!
+        subsDockerImage: DockerImageSubsPayload!
+        subsPlatform: PlatformSubsPayload!
     }
 
     type Query {
@@ -79,6 +101,8 @@ const typeDefs = gql`
             email: String!
             password: String!
             cpassword: String!): User!
+        unregister(
+            username: String!): User!
         login(
             username: String!
             password: String!): User!
@@ -89,6 +113,8 @@ const typeDefs = gql`
             platformId: Int!
             hostname: String!
             description: String): Board!
+        deleteBoard(
+            hostname: String!): Board!        
         createDockerImage(
             platformId: Int!
             name: String!
@@ -100,6 +126,8 @@ const typeDefs = gql`
             command: String!
             datasets: String!
             max_jobs: Int): Session!
+        deleteSession(
+            name: String!): Session!
         createJob(
             sessionId: Int!
             boardId: Int 
