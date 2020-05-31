@@ -6,7 +6,7 @@ const models = require('./models')
 const server = new ApolloServer({
   typeDefs,
   resolvers,
-  context: { models }
+  context: ({req}) => ({req, models}) 
 })
 
 const HOSTNAME = "localhost";
