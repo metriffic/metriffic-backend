@@ -64,8 +64,8 @@ const resolvers = {
         async job (root, { id }, { models }) {
             return models.Job.findByPk(id)
         },
-        async allPlatforms (root, args, { req, models }) {
-            //const user = checkAuth(req)
+        async allPlatforms (root, args, { req, payload, models }) {
+            const user = checkAuth(payload.authorization)
             return models.Platform.findAll()
         },
         async allBoards (root, { platformId }, { models }) {
@@ -90,7 +90,7 @@ const resolvers = {
         },
       },
     Mutation: {
-        async login(root, {username, password}, {models}) {
+        async login(root, { username, password }, { models, pubsub }) {
             const {errors, valid} = validateLoginInput(username, password);
             if(!valid) {
                 throw new UserInputError('Login error', {errors});
@@ -103,21 +103,30 @@ const resolvers = {
             }).then(ret => {
                 if (!ret) {
                     errors.general =  errors.general = 'Account with this username doesn\'t exists';
-                    throw new UserInputError('Username is not found', { errors }); 
+                    throw new UserInputError('Unknown username', { errors }); 
                 }
+                // TODO check if the user is enabled...
                 return ret;
             }).then(ret => {
-                user = ret.get();
-                return bcrypt.compare(password, user.password);
+                user = ret;
+                return bcrypt.compare(password, user.get().password);
             }).then(match => {
                 if(!match) {
                     errors.general =  errors.general = 'Wrong Credentials';
                     throw new UserInputError('Wrong credentials', { errors }); 
                 }                
-                const token = generateToken(user);
-                user.token = token;
-                pubsub.publish(SUBS_USER, { subsUser: { mutation: 'LOGGEDIN', data: user }});
-                return user;
+                pubsub.publish(SUBS_USER, { subsUser: { mutation: 'LOGGEDIN', data: user.get() }});
+
+                user.lastLoggedInAt = new Date().toISOString();
+                user.currentState = 'loggedin';
+
+                return user.save();
+            }).then(() => {
+                return user.reload();
+            }).then(() => {
+                const authuser = user.get();
+                authuser.token = generateToken(authuser);
+                return authuser;
             });
         },
         async register(root, { username, email, password, cpassword }, { models, pubsub }) {
@@ -141,11 +150,16 @@ const resolvers = {
             }).then(() => {
                 return bcrypt.hash(password, 12)
             }).then(password => {
+                const now = new Date().toISOString();
                 return models.User.create({
                     email,
                     username,
                     password,
-                    createdAt: new Date().toISOString()
+                    role: 'user',
+                    createdAt: now,
+                    lastLoggedInAt: now,
+                    isEnabled: true,
+                    currentState: 'loggedout'
                 });    
             }).then(ret => {
                 const token = generateToken(ret);
@@ -156,15 +170,12 @@ const resolvers = {
             });
         },
         async unregister(root, { username }, { models, pubsub }) {
-            //var user = null;
             return models.User.findOne({
                 where: { username: username }
             }).then(ret => {
-                //user = ret.get();
-                return models.User.destroy({
-                    where: {username: username}
-                }).then(() => {
-                    const user = ret.get();
+                const user = ret.get();
+                return ret.destroy()
+                .then(() => {
                     pubsub.publish(SUBS_USER, { subsUser: { mutation: 'DELETED', data: user }});
                     return user;
                 });

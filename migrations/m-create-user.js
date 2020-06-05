@@ -20,9 +20,25 @@ module.exports = {
         allowNull: false,
         type: Sequelize.STRING
       },
-      createdAt: {
+      role: {
         allowNull: false,
         type: Sequelize.STRING
+      },
+      createdAt: {
+        allowNull: false,
+        type: Sequelize.DATE
+      },
+      lastLoggedInAt: {
+        allowNull: false,
+        type: Sequelize.DATE
+      },
+      currentState: {
+        allowNull: false,
+        type: Sequelize.STRING
+      },
+      isEnabled: {
+        allowNull: false,
+        type: Sequelize.BOOLEAN
       },
     });
   },

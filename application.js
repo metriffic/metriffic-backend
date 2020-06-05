@@ -9,11 +9,12 @@ const pubsub = new PubSub();
 const server = new ApolloServer({
   typeDefs,
   resolvers,
-  context: ({req}) => ({
+  context: ({req, payload}) => ({
               req, 
               models,
-              pubsub
-            }) 
+              pubsub,
+              payload
+            })
 })
 
 server

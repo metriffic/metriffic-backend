@@ -19,7 +19,23 @@ module.exports = (sequelize, DataTypes) => {
       type: DataTypes.STRING,
       allowNull: false
     },
+    role: {
+      type: DataTypes.STRING, 
+      allowNull: false
+    },
     createdAt: {
+      type: DataTypes.DATE,
+      allowNull: false
+    },
+    lastLoggedInAt: {
+      type: DataTypes.DATE,
+      allowNull: false
+    },
+    isEnabled: {
+      type: DataTypes.BOOLEAN,
+      allowNull: false
+    },
+    currentState: {
       type: DataTypes.STRING,
       allowNull: false
     },

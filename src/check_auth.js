@@ -2,10 +2,11 @@ const jwt = require('jsonwebtoken')
 const { AuthenticationError } = require('apollo-server')
 const { SECRET_KEY } = require('../config')
 
-module.exports.checkAuth = (req) => {
-    const authHeader = req.headers.authorization;
-    if(authHeader) {
-        const token = authHeader.split('Bearer ')[1];
+//I DONT NEED TO USE REQ HERE!
+module.exports.checkAuth = (auth_token) => {
+    //const auth_token = req.headers.authorization;
+    if(auth_token) {
+        const token = auth_token.split('Bearer ')[1];
         if(token) {
             try {
                 user = jwt.verify(token, SECRET_KEY);

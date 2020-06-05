@@ -4,10 +4,14 @@ const typeDefs = gql`
 
     type User {
         id: ID!
-        email: String!
-        token: String!
         username: String!
+        email: String!
+        role: String!
+        token: String!
         createdAt: String!
+        lastLoggedInAt: String!
+        currentState: String!
+        isEnabled: Int!
     }
 
     type Platform {
