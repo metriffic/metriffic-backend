@@ -113,8 +113,7 @@ const typeDefs = gql`
         login(
             username: String!
             password: String!): User!
-        logout(
-            username: String!): String!
+        logout: String!
     
         createPlatform(
             name: String!,

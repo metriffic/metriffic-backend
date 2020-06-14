@@ -5,19 +5,27 @@ const { UserInputError } = require('apollo-server')
 
 const { validateRegisterInput, validateLoginInput } = require('./validators')
 const { checkAuth } = require('./check_auth')
-const { SECRET_KEY } = require('../config')
+const { SECRET_KEY, AUTH_ALGORITHM } = require('../config')
 
 const SUBS_USER        = 'USER';
 const SUBS_SESSION     = 'SESSION';
 const SUBS_BOARD       = 'BOARD';
 const SUBS_DOCKERIMAGE = 'DOCKERIMAGE';
 const SUBS_PLATFORM    = 'PLATFORM';
+    
 function generateToken(user) {
+    const signOptions = {
+        //issuer:  i,
+        //subject:  s,
+        //audience:  a,
+        //algorithm:  AUTH_ALGORITHM,
+        expiresIn:  "24h",
+       };
     return  jwt.sign({
                 id: user.id,
                 email: user.email,
                 username: user.username
-            }, SECRET_KEY, {expiresIn: '1h'});
+            }, SECRET_KEY, signOptions);
 }
 
 const resolvers = {
@@ -46,7 +54,6 @@ const resolvers = {
 
     Query: {
         async users (root, args, context) {
-            console.log('context', context);
             return null;
         },
         async platform (root, { id }, { models }) {
@@ -65,7 +72,7 @@ const resolvers = {
             return models.Job.findByPk(id)
         },
         async allPlatforms (root, args, { req, payload, models }) {
-            //const user = checkAuth(payload.authorization)
+            const user = checkAuth(payload.authorization, payload.endpoint)
             return models.Platform.findAll()
         },
         async allBoards (root, { platformId }, { models }) {
@@ -130,20 +137,17 @@ const resolvers = {
             });
         },
 
-        async logout(root, { username }, { models, pubsub, payload }) {
-            const user = checkAuth(payload.authorization)
-            const {errors, valid} = validateLoginInput(username, password);
-            var user = null;
-            console.log('a');
-            console.log('b');
+        async logout(root, { }, { models, pubsub, payload }) {
+            const user = checkAuth(payload.authorization, payload.endpoint)
             return models.User.findOne({
-                    where: {username:username}
+                    where: {username:user.username}
             }).then(ret => {
-                console.log('c');
                 const user = ret;
                 pubsub.publish(SUBS_USER, { subsUser: { mutation: 'LOGGEDOUT', data: user.get() }});
                 user.currentState = 'loggedout';
                 return user.save();
+            }).then(ret => {
+                return ret.get().username;
             });
         },
 
