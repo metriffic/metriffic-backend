@@ -33,6 +33,7 @@ const typeDefs = gql`
     type DockerImage {
         id: Int!
         name: String!
+        options: String
         description: String
         platform: Platform!
     }
@@ -40,9 +41,11 @@ const typeDefs = gql`
     type Session {
         id: Int!
         name: String!
+        type: String!
         command: String!
         max_jobs: Int!
         jobs: [Job!]!
+        user: User!
         datasets: String!
         platform: Platform!
         dockerImage: DockerImage!
@@ -110,6 +113,9 @@ const typeDefs = gql`
         login(
             username: String!
             password: String!): User!
+        logout(
+            username: String!): String!
+    
         createPlatform(
             name: String!,
             description: String): Platform!
@@ -122,9 +128,11 @@ const typeDefs = gql`
         createDockerImage(
             platformId: Int!
             name: String!
+            options: String
             description: String): DockerImage!
         createSession(
             platformId: Int!
+            userId: Int!
             dockerImageId: Int!
             name: String!
             command: String!

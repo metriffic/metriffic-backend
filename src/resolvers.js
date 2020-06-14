@@ -65,7 +65,7 @@ const resolvers = {
             return models.Job.findByPk(id)
         },
         async allPlatforms (root, args, { req, payload, models }) {
-            const user = checkAuth(payload.authorization)
+            //const user = checkAuth(payload.authorization)
             return models.Platform.findAll()
         },
         async allBoards (root, { platformId }, { models }) {
@@ -129,6 +129,24 @@ const resolvers = {
                 return authuser;
             });
         },
+
+        async logout(root, { username }, { models, pubsub, payload }) {
+            const user = checkAuth(payload.authorization)
+            const {errors, valid} = validateLoginInput(username, password);
+            var user = null;
+            console.log('a');
+            console.log('b');
+            return models.User.findOne({
+                    where: {username:username}
+            }).then(ret => {
+                console.log('c');
+                const user = ret;
+                pubsub.publish(SUBS_USER, { subsUser: { mutation: 'LOGGEDOUT', data: user.get() }});
+                user.currentState = 'loggedout';
+                return user.save();
+            });
+        },
+
         async register(root, { username, email, password, cpassword }, { models, pubsub }) {
 
             const {errors, valid} = validateRegisterInput(username, email, password, cpassword);
@@ -200,19 +218,21 @@ const resolvers = {
                     return ret;
                 });            
         },
-        async createDockerImage (root, { platformId, name, description }, { models, pubsub }) {
+        async createDockerImage (root, { platformId, name, options, description }, { models, pubsub }) {
             return models.DockerImage.create({ 
                     platformId, 
                     name, 
+                    options,
                     description 
                 }).then(ret => {
                     pubsub.publish(SUBS_DOCKERIMAGE, { subsDockerImage: { mutation: 'ADDED', data: ret.get() }});
                     return ret;
                 });            
         },
-        async createSession (root, { platformId, dockerImageId, name, command, datasets, max_jobs }, { models, pubsub }) {
+        async createSession (root, { platformId, userId, dockerImageId, name, command, datasets, max_jobs }, { models, pubsub }) {
             return models.Session.create({ 
                     platformId, 
+                    userId,
                     dockerImageId,
                     name, 
                     command,

@@ -11,6 +11,10 @@ module.exports = (sequelize, DataTypes) => {
         type: DataTypes.STRING,
         allowNull: false
     },
+    type: {
+      type: DataTypes.STRING,
+      allowNull: false
+    },
     max_jobs: {
         type: DataTypes.STRING,
         allowNull: true,
@@ -27,6 +31,7 @@ module.exports = (sequelize, DataTypes) => {
   },  { timestamps: false });
   Session.associate = function (models) {
     Session.hasMany(models.Job);
+    Session.belongsTo(models.User, { foreignKey: 'userId' });
     Session.belongsTo(models.DockerImage, { foreignKey: 'dockerImageId' });
     Session.belongsTo(models.Platform, { foreignKey: 'platformId' });
   }
