@@ -233,12 +233,13 @@ const resolvers = {
                     return ret;
                 });            
         },
-        async createSession (root, { platformId, userId, dockerImageId, name, command, datasets, max_jobs }, { models, pubsub }) {
+        async createSession (root, { platformId, userId, dockerImageId, name, type, command, datasets, max_jobs }, { models, pubsub }) {
             return models.Session.create({ 
                     platformId, 
                     userId,
                     dockerImageId,
                     name, 
+                    type,
                     command,
                     datasets,
                     max_jobs
@@ -303,6 +304,13 @@ const resolvers = {
         async dockerImage(session, {}, {models}) { // ERROR 
             //return session.getDockerImage()
             return models.DockerImage.findByPk(session.dockerImageId)
+                .then(function(ret){
+                    return ret;
+                });
+        },
+        async user(session, {}, {models}) { // ERROR 
+            //return session.getDockerImage()
+            return models.User.findByPk(session.userId)
                 .then(function(ret){
                     return ret;
                 });

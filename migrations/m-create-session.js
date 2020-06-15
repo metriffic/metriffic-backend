@@ -29,6 +29,10 @@ module.exports = {
         allowNull: true,
         type: Sequelize.STRING
       },
+      userId: {
+        type: Sequelize.INTEGER.UNSIGNED,
+        allowNull: false
+      },
       platformId: {
         type: Sequelize.INTEGER.UNSIGNED,
         allowNull: false

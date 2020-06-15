@@ -134,6 +134,7 @@ const typeDefs = gql`
             userId: Int!
             dockerImageId: Int!
             name: String!
+            type: String!
             command: String!
             datasets: String!
             max_jobs: Int): Session!
