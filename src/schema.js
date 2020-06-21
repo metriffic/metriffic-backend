@@ -42,6 +42,7 @@ const typeDefs = gql`
         id: Int!
         name: String!
         type: String!
+        state: String!
         command: String!
         max_jobs: Int!
         jobs: [Job!]!
@@ -129,7 +130,7 @@ const typeDefs = gql`
             name: String!
             options: String
             description: String): DockerImage!
-        createSession(
+        sessionCreate(
             platformId: Int!
             userId: Int!
             dockerImageId: Int!
@@ -138,6 +139,10 @@ const typeDefs = gql`
             command: String!
             datasets: String!
             max_jobs: Int): Session!
+        sessionUpdate(
+            sessionId: Int!
+            state: String!
+        ): Session!
         deleteSession(
             name: String!): Session!
         createJob(

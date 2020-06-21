@@ -16,6 +16,10 @@ module.exports = {
         allowNull: false,
         type: DataTypes.STRING,
       },
+      state: {
+        allowNull: false,
+        type: DataTypes.STRING,
+      },
       max_jobs: {
         allowNull: true,
         default: 1,

@@ -233,22 +233,6 @@ const resolvers = {
                     return ret;
                 });            
         },
-        async createSession (root, { platformId, userId, dockerImageId, name, type, command, datasets, max_jobs }, { models, pubsub }) {
-            return models.Session.create({ 
-                    platformId, 
-                    userId,
-                    dockerImageId,
-                    name, 
-                    type,
-                    command,
-                    datasets,
-                    max_jobs
-                }).then(ret => {
-                    pubsub.publish(SUBS_SESSION, { subsSession: { mutation: 'ADDED', data: ret.get() }});
-
-                    return ret;
-                }); 
-        },
         async createJob (root, { sessionId, dataset }, { models }) {
             return models.Job.create({ 
                 sessionId, 
@@ -256,7 +240,42 @@ const resolvers = {
             }).then(ret => {
                 return ret;
             });
-        }
+        },
+
+
+        async sessionCreate (root, { platformId, userId, dockerImageId, name, type, command, datasets, max_jobs }, { models, pubsub }) {
+            return models.Session.create({ 
+                    platformId, 
+                    userId,
+                    dockerImageId,
+                    name, 
+                    type,
+                    state : 'SUBMITTED', 
+                    command,
+                    datasets,
+                    max_jobs
+                }).then(session => {
+                    pubsub.publish(SUBS_SESSION, { subsSession: { mutation: 'ADDED', data: session.get() }});
+                    return session;
+                }); 
+        },
+
+        async sessionUpdate (root, { sessionId, state }, { models, pubsub, payload }) {
+            //const user = checkAuth(payload.authorization, payload.endpoint)
+            return models.Session.findOne({
+                where: {id: sessionId}
+            }).then(session => {
+                if (!session) {
+                    errors.general =  errors.general = 'Session doesn\'t exist';
+                    throw new UserInputError('Unknown session', { errors }); 
+                }
+                session.state = state;
+                pubsub.publish(SUBS_SESSION, { subsSession: { mutation: 'UPDATED', data: session.get() }});
+                return session.save();
+            }).then(session => {
+                return session.reload(); 
+            });
+        }    
     },
     Platform: {
         async boards (platform) {
