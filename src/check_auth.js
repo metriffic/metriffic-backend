@@ -2,12 +2,12 @@
 const jwt = require('jsonwebtoken')
 const fs  = require('fs');
 const { AuthenticationError } = require('apollo-server')
-const { SECRET_KEY, AUTH_ALGORITHM, GRID_SERVICE_PUBLIC_KEY } = require('../config')
+const { SECRET_KEY, AUTH_ALGORITHM, GRID_SERVICE_PUBLIC_KEY_FILE } = require('../config')
 
 
 
 // use 'utf8' to get string instead of byte array  (512 bit key)
-var grid_service_public_key  = fs.readFileSync(GRID_SERVICE_PUBLIC_KEY, 'utf8'); 
+const grid_service_public_key  = fs.readFileSync(GRID_SERVICE_PUBLIC_KEY_FILE, 'utf8'); 
 
 
 //I DONT NEED TO USE REQ HERE!
@@ -34,10 +34,10 @@ module.exports.checkAuth = (auth_token, endpoint) => {
                 user = jwt.verify(token, key, verifyOptions);
                 return user;
             } catch(err) {
-                throw new AuthenticationError('Invalid/Expired token...')
+                throw new AuthenticationError('invalid/expired token...')
             }
         }
-        throw new Error('Authentication token must be \'Bearer [token]\'')
+        throw new Error('authentication token must be in \'Bearer [token]\' format')
     }
-    throw new Error('Authorization header must be provided')
+    throw new Error('user not logged in')
 }

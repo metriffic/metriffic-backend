@@ -1,76 +1,27 @@
-const bcrypt = require('bcryptjs')
-const jwt = require('jsonwebtoken')
+const bcrypt = require('bcryptjs');
+const jwt = require('jsonwebtoken');
 
-const { UserInputError } = require('apollo-server')
+const { UserInputError } = require('apollo-server');
 
-const { validateRegisterInput, validateLoginInput } = require('./validators')
-const { checkAuth } = require('./check_auth')
-const { SECRET_KEY, AUTH_ALGORITHM } = require('../config')
+const { validateRegisterInput, validateLoginInput } = require('./validators');
+const { checkAuth } = require('./check_auth');
+const { SECRET_KEY, AUTH_ALGORITHM } = require('../config');
 
-const SUBS_USER        = 'USER';
-const SUBS_SESSION     = 'SESSION';
-const SUBS_BOARD       = 'BOARD';
-const SUBS_DOCKERIMAGE = 'DOCKERIMAGE';
-const SUBS_PLATFORM    = 'PLATFORM';
-    
-function generateToken(user) {
-    const signOptions = {
-        //issuer:  i,
-        //subject:  s,
-        //audience:  a,
-        //algorithm:  AUTH_ALGORITHM,
-        expiresIn:  "24h",
-       };
-    return  jwt.sign({
-                id: user.id,
-                email: user.email,
-                username: user.username
-            }, SECRET_KEY, signOptions);
-}
+const UserResolvers = require('./resolvers_user');
+const SessionResolvers = require('./resolvers_session')
+const PlatformResolvers = require('./resolvers_platform')
+const GridServiceResolvers = require('./resolvers_gridservice')
+const { Channel, AllSubscriptions }  = require('./resolvers_subscription');
 
 const resolvers = {
-    Subscription: {    
-        subsUser: {
-            // Additional event labels can be passed to asyncIterator creation
-            subscribe: (root, args, { pubsub }) => pubsub.asyncIterator(SUBS_USER),
-        },  
-        subsSession: {      
-            // Additional event labels can be passed to asyncIterator creation      
-            subscribe: (root, args, { pubsub }) => pubsub.asyncIterator(SUBS_SESSION),
-        },  
-        subsBoard: {      
-            // Additional event labels can be passed to asyncIterator creation      
-            subscribe: (root, args, { pubsub }) => pubsub.asyncIterator(SUBS_BOARD),
-        },  
-        subsDockerImage: {      
-            // Additional event labels can be passed to asyncIterator creation      
-            subscribe: (root, args, { pubsub }) => pubsub.asyncIterator(SUBS_DOCKERIMAGE),
-        },  
-        subsPlatform: {
-            // Additional event labels can be passed to asyncIterator creation
-            subscribe: (root, args, { pubsub }) => pubsub.asyncIterator(SUBS_PLATFORM),
-        }, 
+    Subscription: {
+        ...AllSubscriptions,
     },
 
     Query: {
-        async users (root, args, context) {
-            return null;
-        },
-        async platform (root, { id }, { models }) {
-            return models.Platform.findByPk(id)
-        },
-        async board (root, { id }, { models }) {
-            return models.Board.findByPk(id)
-        },
-        async dockerImage(root, { id }, { models }) {
-            return models.DockerImage.findByPk(id)
-        },
-        async session (root, { id }, { models }) {
-            return models.Session.findByPk(id)
-        },
-        async job (root, { id }, { models }) {
-            return models.Job.findByPk(id)
-        },
+        ...PlatformResolvers.Query,
+        ...SessionResolvers.Query,
+
         async allPlatforms (root, args, { req, payload, models }) {
             const user = checkAuth(payload.authorization, payload.endpoint)
             return models.Platform.findAll()
@@ -96,187 +47,18 @@ const resolvers = {
             })
         },
       },
+
+
     Mutation: {
-        async login(root, { username, password }, { models, pubsub }) {
-            const {errors, valid} = validateLoginInput(username, password);
-            if(!valid) {
-                throw new UserInputError('Login error', {errors});
-            }
+        ...UserResolvers.Mutation,
+        ...PlatformResolvers.Mutation,
+        ...SessionResolvers.Mutation,
 
-            var user = null;
-
-            return models.User.findOne({
-                    where: {username:username}
-            }).then(ret => {
-                if (!ret) {
-                    errors.general =  errors.general = 'Account with this username doesn\'t exists';
-                    throw new UserInputError('Unknown username', { errors }); 
-                }
-                // TODO check if the user is enabled...
-                return ret;
-            }).then(ret => {
-                user = ret;
-                return bcrypt.compare(password, user.get().password);
-            }).then(match => {
-                if(!match) {
-                    errors.general =  errors.general = 'Wrong Credentials';
-                    throw new UserInputError('Wrong credentials', { errors }); 
-                }                
-                pubsub.publish(SUBS_USER, { subsUser: { mutation: 'LOGGEDIN', data: user.get() }});
-
-                user.lastLoggedInAt = new Date().toISOString();
-                user.currentState = 'loggedin';
-
-                return user.save();
-            }).then(() => {
-                return user.reload();
-            }).then(() => {
-                const authuser = user.get();
-                authuser.token = generateToken(authuser);
-                return authuser;
-            });
-        },
-
-        async logout(root, { }, { models, pubsub, payload }) {
-            const user = checkAuth(payload.authorization, payload.endpoint)
-            return models.User.findOne({
-                    where: {username:user.username}
-            }).then(ret => {
-                const user = ret;
-                pubsub.publish(SUBS_USER, { subsUser: { mutation: 'LOGGEDOUT', data: user.get() }});
-                user.currentState = 'loggedout';
-                return user.save();
-            }).then(ret => {
-                return ret.get().username;
-            });
-        },
-
-        async register(root, { username, email, password, cpassword }, { models, pubsub }) {
-
-            const {errors, valid} = validateRegisterInput(username, email, password, cpassword);
-            if(!valid) {
-                throw new UserInputError('Registration error', {errors});
-            }
-
-            return models.User.findOne({
-                where: { username: username }
-            }).then(user => {
-                if (user) {
-                    throw new UserInputError('Username is taken', {
-                        errors : {
-                            username: 'Account with this username already exists'
-                        }
-                    })
-                }
-                return;
-            }).then(() => {
-                return bcrypt.hash(password, 12)
-            }).then(password => {
-                const now = new Date().toISOString();
-                return models.User.create({
-                    email,
-                    username,
-                    password,
-                    role: 'user',
-                    createdAt: now,
-                    lastLoggedInAt: now,
-                    isEnabled: true,
-                    currentState: 'loggedout'
-                });    
-            }).then(ret => {
-                const token = generateToken(ret);
-                const user = ret.get();
-                user.token = token;
-                pubsub.publish(SUBS_USER, { subsUser: { mutation: 'ADDED', data: user }});
-                return user;
-            });
-        },
-        async unregister(root, { username }, { models, pubsub }) {
-            return models.User.findOne({
-                where: { username: username }
-            }).then(ret => {
-                const user = ret.get();
-                return ret.destroy()
-                .then(() => {
-                    pubsub.publish(SUBS_USER, { subsUser: { mutation: 'DELETED', data: user }});
-                    return user;
-                });
-            }); 
-        },
-        async createPlatform (root, { name, description }, { models, pubsub }) {
-            return models.Platform.create({
-                name,
-                description,
-            }).then(ret => {
-                pubsub.publish(SUBS_PLATFORM, { subsPlatform: { mutation: 'ADDED', data: ret.get() }});
-                return ret;
-            }); 
-        },
-        async createBoard (root, { platformId, hostname, description }, { models, pubsub }) {
-            return models.Board.create({ 
-                    platformId, 
-                    hostname, 
-                    description 
-                }).then(ret => {
-                    pubsub.publish(SUBS_BOARD, { subsBoard: { mutation: 'ADDED', data: ret.get() }});
-                    return ret;
-                });            
-        },
-        async createDockerImage (root, { platformId, name, options, description }, { models, pubsub }) {
-            return models.DockerImage.create({ 
-                    platformId, 
-                    name, 
-                    options,
-                    description 
-                }).then(ret => {
-                    pubsub.publish(SUBS_DOCKERIMAGE, { subsDockerImage: { mutation: 'ADDED', data: ret.get() }});
-                    return ret;
-                });            
-        },
-        async createJob (root, { sessionId, dataset }, { models }) {
-            return models.Job.create({ 
-                sessionId, 
-                dataset,
-            }).then(ret => {
-                return ret;
-            });
-        },
-
-
-        async sessionCreate (root, { platformId, userId, dockerImageId, name, type, command, datasets, max_jobs }, { models, pubsub }) {
-            return models.Session.create({ 
-                    platformId, 
-                    userId,
-                    dockerImageId,
-                    name, 
-                    type,
-                    state : 'SUBMITTED', 
-                    command,
-                    datasets,
-                    max_jobs
-                }).then(session => {
-                    pubsub.publish(SUBS_SESSION, { subsSession: { mutation: 'ADDED', data: session.get() }});
-                    return session;
-                }); 
-        },
-
-        async sessionUpdate (root, { sessionId, state }, { models, pubsub, payload }) {
-            //const user = checkAuth(payload.authorization, payload.endpoint)
-            return models.Session.findOne({
-                where: {id: sessionId}
-            }).then(session => {
-                if (!session) {
-                    errors.general =  errors.general = 'Session doesn\'t exist';
-                    throw new UserInputError('Unknown session', { errors }); 
-                }
-                session.state = state;
-                pubsub.publish(SUBS_SESSION, { subsSession: { mutation: 'UPDATED', data: session.get() }});
-                return session.save();
-            }).then(session => {
-                return session.reload(); 
-            });
-        }    
+        // this is only allowed from 
+        ...GridServiceResolvers.Mutation,
+        
     },
+
     Platform: {
         async boards (platform) {
             return platform.getBoards()

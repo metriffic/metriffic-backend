@@ -80,22 +80,20 @@ const typeDefs = gql`
         data: Platform!
     }
 
+    type DataSubsPayload {   
+        message: String!
+    }
+
     type Subscription {    
         subsUser: UserSubsPayload!
         subsSession: SessionSubsPayload!  
         subsBoard: BoardSubsPayload!
         subsDockerImage: DockerImageSubsPayload!
         subsPlatform: PlatformSubsPayload!
+        subsData: DataSubsPayload!
     }
 
     type Query {
-        users: [User]!
-        platform(id: Int!): Platform
-        board(id: Int!): Board
-        dockerImage(id: Int!): DockerImage
-        session(id: Int!): Session
-        job(id: Int!): Job
-
         allPlatforms: [Platform!]!
         allDockerImages(platformId: Int!): [DockerImage!]
         allSessions(platformId: Int!): [Session!]
@@ -116,23 +114,20 @@ const typeDefs = gql`
             password: String!): User!
         logout: String!
     
-        createPlatform(
+        platformCreate(
             name: String!,
             description: String): Platform!
-        createBoard(
+        boardCreate(
             platformId: Int!
             hostname: String!
             description: String): Board!
-        deleteBoard(
-            hostname: String!): Board!        
-        createDockerImage(
+        dockerImageCreate(
             platformId: Int!
             name: String!
             options: String
             description: String): DockerImage!
         sessionCreate(
             platformId: Int!
-            userId: Int!
             dockerImageId: Int!
             name: String!
             type: String!
@@ -143,12 +138,14 @@ const typeDefs = gql`
             sessionId: Int!
             state: String!
         ): Session!
-        deleteSession(
-            name: String!): Session!
-        createJob(
+        jobCreate(
             sessionId: Int!
             boardId: Int 
             dataset: String!): Job!
+        publishData(
+            username: String!
+            data: String!
+        ): Boolean
       }
 `
 
