@@ -21,32 +21,7 @@ const resolvers = {
     Query: {
         ...PlatformResolvers.Query,
         ...SessionResolvers.Query,
-
-        async allPlatforms (root, args, { req, payload, models }) {
-            const user = checkAuth(payload.authorization, payload.endpoint)
-            return models.Platform.findAll()
-        },
-        async allBoards (root, { platformId }, { models }) {
-            return models.Board.findAll({
-                where: { platformId: platformId }
-            })
-        },
-        async allDockerImages (root, { platformId }, { models }) {
-            return models.DockerImage.findAll({
-                where: { platformId: platformId }
-            })
-        },
-        async allSessions (root, { platformId }, { models }) {
-            return platformId == -1 ? models.Session.findAll()
-                                    : models.Session.findAll({where: { 
-                                                platformId: platformId }});
-        },
-        async allJobs (root, { sessionId }, { models }) {
-            return models.Board.findAll({
-                where: { sessionId: sessionId }
-            })
-        },
-      },
+    },
 
 
     Mutation: {
@@ -55,8 +30,7 @@ const resolvers = {
         ...SessionResolvers.Mutation,
 
         // this is only allowed from 
-        ...GridServiceResolvers.Mutation,
-        
+        ...GridServiceResolvers.Mutation,   
     },
 
     Platform: {
