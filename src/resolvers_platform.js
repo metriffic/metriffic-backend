@@ -1,4 +1,6 @@
 const { Channel }  = require('./resolvers_subscription');
+const { checkAuth } = require('./check_auth');
+const { UserInputError } = require('apollo-server');
 
 module.exports = {
     Query: {
@@ -6,15 +8,39 @@ module.exports = {
             const user = checkAuth(payload.authorization, payload.endpoint)
             return models.Platform.findAll()
         },
-        async allBoards (root, { platformId }, { models }) {
-            return models.Board.findAll({
-                where: { platformId: platformId }
-            })
+        async allBoards (root, { platformName }, { models }) {
+            if(platformName == null) {
+                return models.Board.findAll();
+            } else {
+                return models.Platform.findOne({
+                    where: {name: platformName}
+                }).then(platform => {
+                    if (!platform) {
+                        const errors = {general: 'Unsupported platform'};
+                        throw new UserInputError('Unknown platform', { errors }); 
+                    }
+                    return models.Board.findAll({
+                        where: { platformId: platform.id }
+                    })
+                });
+            }
         },
-        async allDockerImages (root, { platformId }, { models }) {
-            return models.DockerImage.findAll({
-                where: { platformId: platformId }
-            })
+        async allDockerImages (root, { platformName }, { models }) {
+            if(platformName === "") {
+                return models.DockerImage.findAll();
+            } else {
+                return models.Platform.findOne({
+                    where: {name: platformName}
+                }).then(platform => {
+                    if (!platform) {
+                        const errors = {general: 'Unsupported platform'};
+                        throw new UserInputError('Unknown platform', { errors }); 
+                    }
+                    return models.DockerImage.findAll({
+                        where: { platformId: platform.id }
+                    })
+                });
+            }
         },
       },
     Mutation: {

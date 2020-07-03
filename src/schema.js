@@ -95,10 +95,14 @@ const typeDefs = gql`
 
     type Query {
         allPlatforms: [Platform!]!
-        allDockerImages(platformId: Int!): [DockerImage!]
-        allSessions(platformId: Int!): [Session!]
-        allBoards(platformId: Int!): [Board!]
-        allJobs(sessionsId: Int!): [Job!]
+        allDockerImages(platformName: String): [DockerImage!]!
+        allSessions(
+            platformName: String
+            status: [String]): [Session]!
+        allBoards(platformName: String): [Board!]!
+        allJobs(
+            sessionsName: String
+            platformName: String): [Job!]!
     }
 
     type Mutation {
