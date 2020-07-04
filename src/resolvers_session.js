@@ -8,7 +8,8 @@ module.exports =  {
     Query: {
         async allSessions (root, { platformName, status}, { models, pubsub, payload }) {
             const user = checkAuth(payload.authorization, payload.endpoint);
-            const filter = [ { userId: user.id } ];
+            // for cli endpoint its the actual user id, for grid-service it's null
+            const filter = user.id ? [ { userId: user.id } ] : [];
             
             if(status.length) {
                 const status_filter = []
