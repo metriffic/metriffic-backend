@@ -4,6 +4,9 @@ module.exports = {
   SECRET_KEY : 'secret key',
   AUTH_ALGORITHM: 'RS256',
 
-  GRID_SERVICE_PUBLIC_KEY_FILE: "grid_service_public.key",
-  GRID_SERVICE_ENDPOINT: "grid_service"
+  GRID_SERVICE_PUBLIC_KEY_FILE: 'grid_service_public.key',
+  GRID_SERVICE_ENDPOINT: 'grid_service',
+
+  WORKSPACE_MANAGER_PUBLIC_KEY_FILE: 'workspace_manager_public.key',
+  WORKSPACE_MANAGER_ENDPOINT: 'workspace_manager'
 }

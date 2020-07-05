@@ -22,9 +22,9 @@ server
   .then(({ url }) => {
     console.log('URL',url);
     const mparams = {
-      GQL_ENDPOINT:  "http://" + HOSTNAME + ":" + PORT + "/graphql",
+      GQL_URL:  "http://" + HOSTNAME + ":" + PORT + "/graphql",
     };
-    console.log('Started the server is on ', mparams.GQL_ENDPOINT);
+    console.log('Started the server is on ', mparams.GQL_URL);
   });
 
   

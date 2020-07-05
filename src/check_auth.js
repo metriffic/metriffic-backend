@@ -1,13 +1,14 @@
 //https://www.pingidentity.com/en/company/blog/posts/2019/jwt-security-nobody-talks-about.html
 const jwt = require('jsonwebtoken')
 const fs  = require('fs');
-const { AuthenticationError } = require('apollo-server')
-const { SECRET_KEY, AUTH_ALGORITHM, GRID_SERVICE_PUBLIC_KEY_FILE } = require('../config')
+const apollo = require('apollo-server')
+const config = require('../config')
 
 
 
 // use 'utf8' to get string instead of byte array  (512 bit key)
-const grid_service_public_key  = fs.readFileSync(GRID_SERVICE_PUBLIC_KEY_FILE, 'utf8'); 
+const grid_service_public_key  = fs.readFileSync(config.GRID_SERVICE_PUBLIC_KEY_FILE, 'utf8'); 
+const workspace_manager_public_key  = fs.readFileSync(config.WORKSPACE_MANAGER_PUBLIC_KEY_FILE, 'utf8'); 
 
 
 //I DONT NEED TO USE REQ HERE!
@@ -26,15 +27,19 @@ module.exports.checkAuth = (auth_token, endpoint) => {
                    };
                 var key = "";
                 if(endpoint == "cli") {
-                    key = SECRET_KEY;
+                    key = config.SECRET_KEY;
                 } else
-                if(endpoint == "grid_service") {
+                if(endpoint == config.GRID_SERVICE_ENDPOINT) {
                     key = grid_service_public_key;
-                }
+                } else 
+                if(endpoint == config.WORKSPACE_MANAGER_ENDPOINT) {
+                    key = workspace_manager_public_key;
+                } 
+                
                 user = jwt.verify(token, key, verifyOptions);
                 return user;
             } catch(err) {
-                throw new AuthenticationError('invalid/expired token...')
+                throw new apollo.AuthenticationError('invalid/expired token...')
             }
         }
         throw new Error('authentication token must be in \'Bearer [token]\' format')
