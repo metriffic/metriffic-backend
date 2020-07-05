@@ -139,7 +139,7 @@ const typeDefs = gql`
             datasets: String!
             max_jobs: Int): Session!
         sessionUpdate(
-            sessionId: Int!
+            name: String!
             state: String!
         ): Session!
         jobCreate(

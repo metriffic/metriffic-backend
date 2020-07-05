@@ -27,7 +27,7 @@ module.exports =  {
                 }).then(platform => {
                     if (!platform) {
                         const errors = { general:  'Unsupported platform' };
-                        throw new UserInputError('Unknown platform', { errors }); 
+                        throw new UserInputError('Platform \'' + platformName + '\' is not supported.', { errors }); 
                     }
                     filter.push({ platformId: platform.id });
                     return models.Session.findAll({
@@ -47,30 +47,38 @@ module.exports =  {
         
         async sessionCreate (root, { platformId, dockerImageId, name, type, command, datasets, max_jobs }, { models, pubsub, payload }) { 
             const user = checkAuth(payload.authorization, payload.endpoint);
-            return models.Session.create({ 
+            return models.Session.findOne({
+                where: {name: name}
+            }).then(session => {
+                if (session) {
+                    const errors = { general: 'Duplicate session'};
+                    throw new UserInputError('Session \'' + name + '\' exists. Please choose a different name.', { errors }); 
+                }
+                return models.Session.create({ 
                     platformId, 
                     userId : user.id,
                     dockerImageId,
                     name, 
-                    type,
+                    type: type.toUpperCase(),
                     state : 'SUBMITTED', 
                     command,
                     datasets,
                     max_jobs
-                }).then(session => {
+                });                    
+            }).then(session => {
                     pubsub.publish(Channel.SESSION, { subsSession: { mutation: 'ADDED', data: session.get() }});
                     return session;
                 }); 
         },
 
-        async sessionUpdate (root, { sessionId, state }, { models, pubsub, payload }) {
+        async sessionUpdate (root, { name, state }, { models, pubsub, payload }) {
             const user = checkAuth(payload.authorization, payload.endpoint)
             return models.Session.findOne({
-                where: {id: sessionId}
+                where: {name: name}
             }).then(session => {
                 if (!session) {
-                    const errors = { general: 'Session doesn\'t exist' };
-                    throw new UserInputError('Unknown session', { errors }); 
+                    const errors = { general: 'Unknown session' };
+                    throw new UserInputError('Session doesn\'t exist.', { errors }); 
                 }
                 session.state = state;
                 pubsub.publish(Channel.SESSION, { subsSession: { mutation: 'UPDATED', data: session.get() }});
