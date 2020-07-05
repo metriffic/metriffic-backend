@@ -122,17 +122,17 @@ const typeDefs = gql`
             name: String!,
             description: String): Platform!
         boardCreate(
-            platformId: Int!
+            platform: String!
             hostname: String!
             description: String): Board!
         dockerImageCreate(
-            platformId: Int!
+            platformid: String!
             name: String!
             options: String
             description: String): DockerImage!
         sessionCreate(
-            platformId: Int!
-            dockerImageId: Int!
+            platform: String!
+            dockerimage: String!
             name: String!
             type: String!
             command: String!
@@ -143,7 +143,7 @@ const typeDefs = gql`
             state: String!
         ): Session!
         jobCreate(
-            sessionId: Int!
+            session: String!
             boardId: Int 
             dataset: String!): Job!
         publishData(

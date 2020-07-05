@@ -45,19 +45,45 @@ module.exports =  {
 
     Mutation: {
         
-        async sessionCreate (root, { platformId, dockerImageId, name, type, command, datasets, max_jobs }, { models, pubsub, payload }) { 
+        async sessionCreate (root, { platform, dockerimage, name, type, command, datasets, max_jobs }, { models, pubsub, payload }) { 
             const user = checkAuth(payload.authorization, payload.endpoint);
+            var uplatform = null;
+            var udockerimage = null
             return models.Session.findOne({
                 where: {name: name}
-            }).then(session => {
-                if (session) {
+            }).then(ret => {
+                if (ret) {
                     const errors = { general: 'Duplicate session'};
                     throw new UserInputError('Session \'' + name + '\' exists. Please choose a different name.', { errors }); 
                 }
+                // session name is unique, check if the platform exists
+                return models.Platform.findOne({
+                    where: {name: platform}
+                });
+            }).then(ret => {
+                if (ret == null) {
+                    const errors = { general: 'Unknown platform'};
+                    throw new UserInputError('Platform \'' + platform + '\' doesn\'t exists. Please choose one of the supported platforms.', { errors }); 
+                }
+                // platform exists, check dockerimage exists as well
+                uplatform = ret.get();
+                return models.DockerImage.findOne({
+                    where: {name: dockerimage}
+                });
+            }).then(ret => {
+                if (ret == null) {
+                    const errors = { general: 'Unknown docker image'};
+                    throw new UserInputError('Docker image \'' + dockerimage + '\' doesn\'t exists. Please choose one of the existing images.', { errors }); 
+                }                                
+                udockerimage = ret.get();
+                if(udockerimage.platformId != uplatform.id) {
+                    const errors = { general: 'Incompatible docker image'};
+                    throw new UserInputError('Docker image \'' + dockerimage + '\' is not compatible with platform \'' + platform + '\'.', { errors }); 
+                }
                 return models.Session.create({ 
-                    platformId, 
+                    platformId : uplatform.id, 
                     userId : user.id,
-                    dockerImageId,
+                    dockerImageId : udockerimage.id,
                     name, 
                     type: type.toUpperCase(),
                     state : 'SUBMITTED', 
