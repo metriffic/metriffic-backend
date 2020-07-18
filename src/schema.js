@@ -79,7 +79,10 @@ const typeDefs = gql`
         mutation: String!
         data: Platform!
     }
-
+    type RSyncRequestPayload {   
+        username: String
+        password: String
+    }
     type DataSubsPayload {   
         message: String!
     }
@@ -90,6 +93,7 @@ const typeDefs = gql`
         subsBoard: BoardSubsPayload!
         subsDockerImage: DockerImageSubsPayload!
         subsPlatform: PlatformSubsPayload!
+        subsRSync: RSyncRequestPayload!
         subsData: DataSubsPayload!
     }
 
@@ -103,6 +107,7 @@ const typeDefs = gql`
         allJobs(
             sessionsName: String
             platformName: String): [Job!]!
+        rsyncRequest: String!
     }
 
     type Mutation {

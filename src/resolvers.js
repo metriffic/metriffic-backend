@@ -10,6 +10,7 @@ const { SECRET_KEY, AUTH_ALGORITHM } = require('../config');
 const UserResolvers = require('./resolvers_user');
 const SessionResolvers = require('./resolvers_session')
 const PlatformResolvers = require('./resolvers_platform')
+const WorkspaceResolvers = require('./resolvers_workspace')
 const GridServiceResolvers = require('./resolvers_gridservice')
 const { Channel, AllSubscriptions }  = require('./resolvers_subscription');
 
@@ -21,6 +22,7 @@ const resolvers = {
     Query: {
         ...PlatformResolvers.Query,
         ...SessionResolvers.Query,
+        ...WorkspaceResolvers.Query,
     },
 
 
