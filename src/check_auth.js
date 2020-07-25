@@ -5,11 +5,14 @@ const apollo = require('apollo-server')
 const config = require('../config')
 
 
-
 // use 'utf8' to get string instead of byte array  (512 bit key)
-const grid_service_public_key  = fs.readFileSync(config.GRID_SERVICE_PUBLIC_KEY_FILE, 'utf8'); 
-const workspace_manager_public_key  = fs.readFileSync(config.WORKSPACE_MANAGER_PUBLIC_KEY_FILE, 'utf8'); 
+let grid_service_public_key  = undefined; 
+let workspace_manager_public_key  = undefined; 
 
+module.exports.initAuth = () => {
+    grid_service_public_key  = fs.readFileSync(config.GRID_SERVICE_PUBLIC_KEY_FILE, 'utf8'); 
+    workspace_manager_public_key  = fs.readFileSync(config.WORKSPACE_MANAGER_PUBLIC_KEY_FILE, 'utf8'); 
+}
 
 //I DONT NEED TO USE REQ HERE!
 module.exports.checkAuth = (auth_token, endpoint) => {
