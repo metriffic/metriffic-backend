@@ -14,11 +14,11 @@ module.exports = {
       },
       type: {
         allowNull: false,
-        type: DataTypes.STRING,
+        type: Sequelize.STRING,
       },
       state: {
         allowNull: false,
-        type: DataTypes.STRING,
+        type: Sequelize.STRING,
       },
       max_jobs: {
         allowNull: true,
