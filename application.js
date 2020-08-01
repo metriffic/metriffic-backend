@@ -1,4 +1,4 @@
-const typeDefs = require('./src/schema')
+const schema = require('./src/schema')
 const resolvers = require('./src/resolvers')
 const models = require('./models')
 const config = require('./config')
@@ -8,8 +8,10 @@ const { PubSub, ApolloServer } = require('apollo-server')
 const pubsub = new PubSub();
 
 const server = new ApolloServer({
-  typeDefs,
+  schema,
   resolvers,
+  playground: false,
+  introspection: false,
   context: ({req, payload}) => ({
               req, 
               models,
@@ -21,8 +23,7 @@ const server = new ApolloServer({
 server
   .listen(config.GQL_PORT)
   .then(({ url }) => {
-    initAuth();
-    console.log('Started the server is on ', "http://" + config.GQL_HOSTNAME + ":" + config.GQL_PORT + "/graphql");
+    console.log('Started the server is on port ', config.GQL_PORT);
   });
 
   
