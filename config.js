@@ -1,7 +1,6 @@
 const path = require('path');
 
 module.exports = {
-  GQL_HOSTNAME: process.env['METRIFFIC_GQL_HOSTNAME'],
   GQL_PORT: 4000,
   SECRET_KEY : 'secret key',
   AUTH_ALGORITHM: 'RS256',
