@@ -114,20 +114,25 @@ module.exports =  {
             });
         },
 
-        async jobCreate (root, { sessionId, dataset }, { models }) {
-            return models.Job.create({ 
-                sessionId, 
-                dataset,
-                state : 'SUBMITTED'
-            }).then(ret => {
-                return ret;
-            });
+        async jobCreate (root, { sessionId, datasets }, { models }) {
+	    const datasets_parsed = JSON.parse(datasets);
+            const submitted_jobs = [];
+            const promises = datasets_parsed.map(dataset => {
+		    return models.Job.create({ 
+			sessionId, 
+			dataset,
+			state : 'SUBMITTED'
+		    }).then(job => {
+			submitted_jobs.push(job);
+		    });
+	    });
+            return Promise.all(promises).then(() => { return submitted_jobs });
         },
 
-        async jobUpdate (root, { jobId, state }, { models, pubsub, payload }) {
+        async jobUpdate (root, { id, state }, { models, pubsub, payload }) {
             const user = checkAuth(payload.authorization, payload.endpoint)
             return models.Job.findOne({
-                where: {jobId: jobId}
+                where: {id: id}
             }).then(job => {
                 if (!job) {
                     const errors = { general: 'Unknown job' };
@@ -136,7 +141,7 @@ module.exports =  {
                 job.state = state;
                 pubsub.publish(Channel.JOB, { subsJob : { mutation: 'UPDATED', data: job.get() }});
                 return job.save();
-            }).then(session => {
+            }).then(job => {
                 return job.reload(); 
             });
         },

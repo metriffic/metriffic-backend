@@ -153,9 +153,9 @@ const typeDefs = gql`
             ): Session!
         jobCreate(
             sessionId: Int!
-            dataset: String!): Job!
+            datasets: String!): [Job!]!
         jobUpdate(
-            jobId: Int!
+            id: Int!
             state: String!
             ): Job!
         publishData(
