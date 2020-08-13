@@ -54,8 +54,8 @@ const typeDefs = gql`
 
     type Job {
         id: Int!
+        state: String!
         dataset: String!
-        board: Board
         session: Session!
     }
 
@@ -66,6 +66,10 @@ const typeDefs = gql`
     type SessionSubsPayload {   
         mutation: String!
         data: Session!
+    }   
+    type JobSubsPayload {   
+        mutation: String!
+        data: Job!
     }   
     type BoardSubsPayload {   
         mutation: String!
@@ -90,6 +94,7 @@ const typeDefs = gql`
     type Subscription {    
         subsUser: UserSubsPayload!
         subsSession: SessionSubsPayload!  
+        subsJob: JobSubsPayload!  
         subsBoard: BoardSubsPayload!
         subsDockerImage: DockerImageSubsPayload!
         subsPlatform: PlatformSubsPayload!
@@ -105,8 +110,7 @@ const typeDefs = gql`
             status: [String]): [Session]!
         allBoards(platformName: String): [Board!]!
         allJobs(
-            sessionsName: String
-            platformName: String): [Job!]!
+            sessionsName: String): [Job!]!
         rsyncRequest: String!
     }
 
@@ -146,11 +150,14 @@ const typeDefs = gql`
         sessionUpdate(
             name: String!
             state: String!
-        ): Session!
+            ): Session!
         jobCreate(
-            session: String!
-            boardId: Int 
+            sessionId: Int!
             dataset: String!): Job!
+        jobUpdate(
+            jobId: Int!
+            state: String!
+            ): Job!
         publishData(
             username: String!
             data: String!

@@ -118,8 +118,26 @@ module.exports =  {
             return models.Job.create({ 
                 sessionId, 
                 dataset,
+                state : 'SUBMITTED'
             }).then(ret => {
                 return ret;
+            });
+        },
+
+        async jobUpdate (root, { jobId, state }, { models, pubsub, payload }) {
+            const user = checkAuth(payload.authorization, payload.endpoint)
+            return models.Job.findOne({
+                where: {jobId: jobId}
+            }).then(job => {
+                if (!job) {
+                    const errors = { general: 'Unknown job' };
+                    throw new UserInputError('Job doesn\'t exist.', { errors }); 
+                }
+                job.state = state;
+                pubsub.publish(Channel.JOB, { subsJob : { mutation: 'UPDATED', data: job.get() }});
+                return job.save();
+            }).then(session => {
+                return job.reload(); 
             });
         },
 

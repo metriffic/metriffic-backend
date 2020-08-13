@@ -4,6 +4,7 @@ const { checkAuth } = require('./check_auth');
 const Channel = {
     USER        : 'USER',
     SESSION     : 'SESSION',
+    JOB         : 'JOB',
     BOARD       : 'BOARD',
     DOCKERIMAGE : 'DOCKERIMAGE',
     PLATFORM    : 'PLATFORM',   
@@ -19,6 +20,10 @@ const AllSubscriptions = {
     subsSession: {      
         // Additional event labels can be passed to asyncIterator creation      
         subscribe: (root, args, { pubsub }) => pubsub.asyncIterator(Channel.SESSION),
+    }, 
+    subsJob: {      
+        // Additional event labels can be passed to asyncIterator creation      
+        subscribe: (root, args, { pubsub }) => pubsub.asyncIterator(Channel.JOB),
     },  
     subsBoard: {      
         // Additional event labels can be passed to asyncIterator creation      
