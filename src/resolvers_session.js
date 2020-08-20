@@ -36,12 +36,25 @@ module.exports =  {
                 });
             }
         },
-        async allJobs (root, { sessionId }, { models }) {
-            return models.Board.findAll({
-                where: { sessionId: sessionId }
-            })
+        async sessionStatus (root, { name }, { models, payload }) {
+            const user = checkAuth(payload.authorization, payload.endpoint)
+            var session_state = undefined;
+            return models.Session.findOne({
+                where: {name: name}
+            }).then(session => {
+                if (!session) {
+                    const errors = { general: 'Unknown session' };
+                    throw new UserInputError('Session doesn\'t exist.', { errors }); 
+                }
+                session_state = session.state;
+                return models.Job.findAll({
+                    where: { sessionId: session.id }
+                })
+            }).then(jobs => {
+                return {jobs: jobs, state: session_state}
+            });
         },
-      },
+    },
 
     Mutation: {
         
@@ -94,7 +107,7 @@ module.exports =  {
             }).then(session => {
                     pubsub.publish(Channel.SESSION, { subsSession: { mutation: 'ADDED', data: session.get() }});
                     return session;
-                }); 
+            }); 
         },
 
         async sessionUpdate (root, { name, state }, { models, pubsub, payload }) {
@@ -114,18 +127,19 @@ module.exports =  {
             });
         },
 
-        async jobCreate (root, { sessionId, datasets }, { models }) {
-	    const datasets_parsed = JSON.parse(datasets);
-            const submitted_jobs = [];
-            const promises = datasets_parsed.map(dataset => {
-		    return models.Job.create({ 
-			sessionId, 
-			dataset,
-			state : 'SUBMITTED'
-		    }).then(job => {
-			submitted_jobs.push(job);
-		    });
-	    });
+        async jobCreate (root, { sessionId, datasets }, { models, payload }) {
+            const user = checkAuth(payload.authorization, payload.endpoint)
+            const datasets_parsed = JSON.parse(datasets);
+                const submitted_jobs = [];
+                const promises = datasets_parsed.map(dataset => {
+                return models.Job.create({ 
+                    sessionId, 
+                    dataset,
+                    state : 'SUBMITTED'
+                }).then(job => {
+                    submitted_jobs.push(job);
+                });
+            });
             return Promise.all(promises).then(() => { return submitted_jobs });
         },
 

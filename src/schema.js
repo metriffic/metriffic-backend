@@ -66,6 +66,10 @@ const typeDefs = gql`
     type SessionSubsPayload {   
         mutation: String!
         data: Session!
+    }
+    type SessionStatusPayload {   
+        jobs: [Job]!
+        state: String!
     }   
     type JobSubsPayload {   
         mutation: String!
@@ -109,8 +113,8 @@ const typeDefs = gql`
             platformName: String
             status: [String]): [Session]!
         allBoards(platformName: String): [Board!]!
-        allJobs(
-            sessionsName: String): [Job!]!
+        sessionStatus(
+            name: String): SessionStatusPayload!
         rsyncRequest: String!
     }
 
