@@ -61,7 +61,7 @@ module.exports =  {
         async sessionCreate (root, { platform, dockerimage, name, type, command, datasets, max_jobs }, { models, pubsub, payload }) { 
             const user = checkAuth(payload.authorization, payload.endpoint);
             var uplatform = null;
-            var udockerimage = null
+            var udockerimage = null;
             return models.Session.findOne({
                 where: {name: name}
             }).then(ret => {
@@ -93,6 +93,7 @@ module.exports =  {
                     const errors = { general: 'Incompatible docker image'};
                     throw new UserInputError('Docker image \'' + dockerimage + '\' is not compatible with platform \'' + platform + '\'.', { errors }); 
                 }
+                udockeroptions = udockerimage.options;
                 return models.Session.create({ 
                     platformId : uplatform.id, 
                     userId : user.id,
@@ -105,8 +106,20 @@ module.exports =  {
                     max_jobs
                 });                    
             }).then(session => {
-                    pubsub.publish(Channel.SESSION, { subsSession: { mutation: 'ADDED', data: session.get() }});
-                    return session;
+                const data = {
+                    user: user.username,
+                    session_id: session.id, 
+                    session_name : session.name,
+                    session_type: session.type, 
+                    platform_id: uplatform.id,
+                    docker_image: udockerimage.name,
+                    docker_options: udockerimage.options,
+                    command: session.command,
+                    datasets: session.datasets,
+                    max_jobs: session.max_jobs,
+                };
+                pubsub.publish(Channel.SESSION, { subsSession: { mutation: 'ADDED', data: JSON.stringify(data) }});
+                return session;
             }); 
         },
 
@@ -120,10 +133,49 @@ module.exports =  {
                     throw new UserInputError('Session doesn\'t exist.', { errors }); 
                 }
                 session.state = state;
-                pubsub.publish(Channel.SESSION, { subsSession: { mutation: 'UPDATED', data: session.get() }});
+                // TBD: this has redundant data, consider trimming.
+                const data = {
+                    user: user.username,
+                    session_id: session.id, 
+                    session_name : session.name,
+                    session_type: session.type,                     
+                    session_state: session.state,
+                    platform_id: session.platformId,
+                };
+                pubsub.publish(Channel.SESSION, { subsSession: { mutation: 'UPDATED', data: JSON.stringify(data) }});
                 return session.save();
             }).then(session => {
                 return session.reload(); 
+            });
+        },
+
+        async sessionSave (root, { name, dockerimage, description }, { models, pubsub, payload }) {
+            const user = checkAuth(payload.authorization, payload.endpoint)
+            return models.Session.findOne({
+                where: {name: name}
+            }).then(session => {
+                if (!session) {
+                    const errors = { general: 'Unknown session' };
+                    throw new UserInputError('Session doesn\'t exist.', { errors }); 
+                }
+                if (session.type != "INTERACTIVE") {
+                    const errors = { general: 'Can not save' };
+                    throw new UserInputError('Can only save docker-images for interactive sessions.', { errors });     
+                }
+                if (session.state != "RUNNING") {
+                    const errors = { general: 'Can not save' };
+                    throw new UserInputError('Can only save docker-images for running sessions.', { errors });     
+                }
+
+                const data = {
+                    session_id: session.id, 
+                    session_name: session.name,
+                    docker_image: dockerimage,
+                    platform_id: session.platformId,
+                };
+
+                pubsub.publish(Channel.SESSION, { subsSession: { mutation: 'REQUESTED_SAVE', data: JSON.stringify(data) }});
+                return {status: "Request to save docker-image for session " + session.name + " is submitted..."};
             });
         },
 

@@ -65,7 +65,7 @@ const typeDefs = gql`
     }
     type SessionSubsPayload {   
         mutation: String!
-        data: Session!
+        data: String!
     }
     type SessionStatusPayload {   
         jobs: [Job]!
@@ -93,6 +93,9 @@ const typeDefs = gql`
     }
     type DataSubsPayload {   
         message: String!
+    }
+    type DockerImageSavePayload {   
+        status: String!
     }
 
     type Subscription {    
@@ -151,6 +154,10 @@ const typeDefs = gql`
             command: String!
             datasets: String!
             max_jobs: Int): Session!
+        sessionSave(
+            name: String!
+            dockerimage: String!
+            description: String): DockerImageSavePayload!    
         sessionUpdate(
             name: String!
             state: String!
