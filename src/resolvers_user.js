@@ -5,9 +5,11 @@ const { UserInputError } = require('apollo-server')
 
 const { validateRegisterInput, validateLoginInput } = require('./validators')
 const { checkAuth } = require('./check_auth')
+const { Roles, States } = require('../models/user')
 const { SECRET_KEY, AUTH_ALGORITHM } = require('../config')
 
 const { Channel }  = require('./resolvers_subscription');
+const { Statement } = require('sqlite3')
 
 
 function generateToken(user) {
@@ -21,7 +23,8 @@ function generateToken(user) {
     return  jwt.sign({
                 id: user.id,
                 email: user.email,
-                username: user.username
+                username: user.username,
+                role: user.role,
             }, SECRET_KEY, signOptions);
 }
 
@@ -52,10 +55,10 @@ module.exports = {
                     errors.general =  errors.general = 'Wrong Credentials';
                     throw new UserInputError('Wrong credentials', { errors }); 
                 }                
-                pubsub.publish(Channel.USER, { subsUser: { mutation: 'LOGGEDIN', data: user.get() }});
+                pubsub.publish(Channel.USER, { subsUser: { mutation: States.LOGGEDIN, data: user.get() }});
 
                 user.lastLoggedInAt = new Date().toISOString();
-                user.currentState = 'loggedin';
+                user.currentState = States.LOGGEDIN;
 
                 return user.save();
             }).then(() => {
@@ -73,8 +76,8 @@ module.exports = {
                     where: {username:user.username}
             }).then(ret => {
                 const user = ret;
-                pubsub.publish(Channel.USER, { subsUser: { mutation: 'LOGGEDOUT', data: user.get() }});
-                user.currentState = 'loggedout';
+                pubsub.publish(Channel.USER, { subsUser: { mutation: States.LOGGEDOUT, data: user.get() }});
+                user.currentState = States.LOGGEDOUT;
                 return user.save();
             }).then(ret => {
                 return ret.get().username;
@@ -107,11 +110,11 @@ module.exports = {
                     email,
                     username,
                     password,
-                    role: 'user',
+                    role: Roles.USER,
                     createdAt: now,
                     lastLoggedInAt: now,
                     isEnabled: true,
-                    currentState: 'loggedin'
+                    currentState: State.LOGGEDIN
                 });    
             }).then(ret => {
                 const token = generateToken(ret);

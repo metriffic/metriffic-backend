@@ -67,6 +67,11 @@ const typeDefs = gql`
         mutation: String!
         data: String!
     }
+    type AdminSubsPayload { 
+        username: String!  
+        command: String!
+        data: String
+    }
     type SessionStatusPayload {   
         jobs: [Job]!
         state: String!
@@ -101,6 +106,7 @@ const typeDefs = gql`
     type Subscription {    
         subsUser: UserSubsPayload!
         subsSession: SessionSubsPayload!  
+        subsAdmin: AdminSubsPayload!  
         subsJob: JobSubsPayload!  
         subsBoard: BoardSubsPayload!
         subsDockerImage: DockerImageSubsPayload!
@@ -169,6 +175,10 @@ const typeDefs = gql`
             id: Int!
             state: String!
             ): Job!
+        adminRequest(
+                command: String!
+                data: String
+                ): Boolean
         publishData(
             username: String!
             data: String!

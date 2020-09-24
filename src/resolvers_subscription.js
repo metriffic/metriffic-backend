@@ -9,6 +9,7 @@ const Channel = {
     DOCKERIMAGE : 'DOCKERIMAGE',
     PLATFORM    : 'PLATFORM',   
     DATA        : 'DATA',
+    ADMIN       : 'ADMIN',
     RSYNC_REQUEST : 'RSYNC_REQUEST', 
 }   
 
@@ -36,6 +37,10 @@ const AllSubscriptions = {
     subsPlatform: {
         // Additional event labels can be passed to asyncIterator creation
         subscribe: (root, args, { pubsub }) => pubsub.asyncIterator(Channel.PLATFORM),
+    }, 
+    subsAdmin: {      
+        // Additional event labels can be passed to asyncIterator creation      
+        subscribe: (root, args, { pubsub }) => pubsub.asyncIterator(Channel.ADMIN),
     },     
     subsRSync: {
         // Additional event labels can be passed to asyncIterator creation

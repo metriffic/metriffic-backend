@@ -12,6 +12,7 @@ const SessionResolvers = require('./resolvers_session')
 const PlatformResolvers = require('./resolvers_platform')
 const WorkspaceResolvers = require('./resolvers_workspace')
 const GridServiceResolvers = require('./resolvers_gridservice')
+const AdminResolvers = require('./resolvers_admin')
 const { Channel, AllSubscriptions }  = require('./resolvers_subscription');
 
 const resolvers = {
@@ -30,6 +31,7 @@ const resolvers = {
         ...UserResolvers.Mutation,
         ...PlatformResolvers.Mutation,
         ...SessionResolvers.Mutation,
+        ...AdminResolvers.Mutation,
 
         // this is only allowed from 
         ...GridServiceResolvers.Mutation,   
