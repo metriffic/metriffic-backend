@@ -1,5 +1,17 @@
 'use strict';
+ 
+const Roles = {
+  USER  : 'USER',
+  ADMIN : 'ADMIN',
+};
+
+const States = {
+  LOGGEDIN  : 'LOGGEDIN',
+  LOGGEDOUT : 'LOGGEDOUT',
+};
+
 module.exports = (sequelize, DataTypes) => {
+
   const User = sequelize.define('User', {
     id: {
       allowNull: false,
@@ -45,3 +57,6 @@ module.exports = (sequelize, DataTypes) => {
   }
   return User;
 };
+
+module.exports.Roles = Roles;
+module.exports.States = States;
