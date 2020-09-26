@@ -10,7 +10,6 @@ module.exports = {
         async publishData (root, { username, data }, { models, pubsub, payload }) {
             const user = checkAuth(payload.authorization, payload.endpoint);
             if(user_is_grid_service(user)) {
-                console.log('published data', username, data);
                 pubsub.publish(Channel.DATA + '#' + username, { subsData: { message: data }});
                 return true;
             } else {
