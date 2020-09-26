@@ -107,7 +107,7 @@ module.exports =  {
                 });                    
             }).then(session => {
                 const data = {
-                    user: user.username,
+                    username: user.username,
                     session_id: session.id, 
                     session_name : session.name,
                     session_type: session.type, 
@@ -135,7 +135,7 @@ module.exports =  {
                 session.state = state;
                 // TBD: this has redundant data, consider trimming.
                 const data = {
-                    user: user.username,
+                    username: user.username,
                     session_id: session.id, 
                     session_name : session.name,
                     session_type: session.type,                     
@@ -168,6 +168,7 @@ module.exports =  {
                 }
 
                 const data = {
+                    username: user.username,
                     session_id: session.id, 
                     session_name: session.name,
                     docker_image: dockerimage,
