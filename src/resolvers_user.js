@@ -114,7 +114,7 @@ module.exports = {
                     createdAt: now,
                     lastLoggedInAt: now,
                     isEnabled: true,
-                    currentState: State.LOGGEDIN
+                    currentState: States.LOGGEDIN
                 });    
             }).then(ret => {
                 const token = generateToken(ret);
