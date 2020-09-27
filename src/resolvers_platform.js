@@ -64,12 +64,23 @@ module.exports = {
                 });            
         },
         async dockerImageCreate (root, { platformId, name, options, description }, { models, pubsub }) {
-            return models.DockerImage.create({ 
-                    platformId, 
-                    name, 
-                    options,
-                    description 
-                }).then(ret => {
+            return models.Platform.findOne({
+                where: {id: platformId}
+            }).then(ret => {
+                if (ret == null) {
+                    const errors = { general: 'Unknown platform'};
+                    throw new UserInputError('Platform id# \'' + platformId + '\' doesn\'t exists. Please choose one of the supported platforms.', { errors }); 
+                }
+                // platform exists, check dockerimage exists as well
+                uplatform = ret.get();
+
+                return models.DockerImage.create({ 
+                        platformId, 
+                        name, 
+                        options,
+                        description 
+                    });
+            }).then(ret => {
                     pubsub.publish(Channel.DOCKERIMAGE, { subsDockerImage: { mutation: 'ADDED', data: ret.get() }});
                     return ret;
                 });            

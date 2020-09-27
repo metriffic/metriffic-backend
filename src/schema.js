@@ -148,7 +148,7 @@ const typeDefs = gql`
             hostname: String!
             description: String): Board!
         dockerImageCreate(
-            platformid: String!
+            platformId: Int!
             name: String!
             options: String
             description: String): DockerImage!
