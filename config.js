@@ -1,6 +1,8 @@
 const path = require('path');
 
 module.exports = {
+  API_VERSION: '0.0.1',
+  
   GQL_PORT: 4000,
   SECRET_KEY : 'secret key',
   AUTH_ALGORITHM: 'RS256',

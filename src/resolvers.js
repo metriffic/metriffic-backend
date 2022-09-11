@@ -7,6 +7,7 @@ const { validateRegisterInput, validateLoginInput } = require('./validators');
 const { checkAuth } = require('./check_auth');
 const { SECRET_KEY, AUTH_ALGORITHM } = require('../config');
 
+const GeneralResolvers = require('./resolvers_general');
 const UserResolvers = require('./resolvers_user');
 const SessionResolvers = require('./resolvers_session')
 const PlatformResolvers = require('./resolvers_platform')
@@ -21,6 +22,7 @@ const resolvers = {
     },
 
     Query: {
+        ...GeneralResolvers.Query,
         ...PlatformResolvers.Query,
         ...SessionResolvers.Query,
         ...WorkspaceResolvers.Query,

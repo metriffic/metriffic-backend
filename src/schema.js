@@ -2,6 +2,10 @@ const { gql } = require('apollo-server')
 
 const typeDefs = gql`
 
+    type HandshakePayload {   
+        api_version: String!
+    }
+
     type User {
         id: ID!
         username: String!
@@ -116,6 +120,7 @@ const typeDefs = gql`
     }
 
     type Query {
+        handshake: HandshakePayload!
         allPlatforms: [Platform!]!
         allDockerImages(platformName: String): [DockerImage!]!
         allSessions(
