@@ -31,7 +31,6 @@ function generateToken(user) {
 module.exports = {
     Mutation: {
         async login(root, { username, password }, { models, pubsub }) {
-            console.log('LOGIN', API_VERSION) 
 
             const {errors, valid} = validateLoginInput(username, password);
             if(!valid) {
