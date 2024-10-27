@@ -53,10 +53,11 @@ module.exports = {
                 return ret;
             }); 
         },
-        async boardCreate (root, { platformId, hostname, description }, { models, pubsub }) {
+        async boardCreate (root, { platformId, hostname, ip, description }, { models, pubsub }) {
             return models.Board.create({ 
                     platformId, 
                     hostname, 
+		    ip,
                     description 
                 }).then(ret => {
                     pubsub.publish(Channel.BOARD, { subsBoard: { mutation: 'ADDED', data: ret.get() }});

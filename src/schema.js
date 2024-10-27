@@ -30,6 +30,7 @@ const typeDefs = gql`
     type Board {
         id: Int!
         hostname: String!
+        ip: String!
         description: String
         platform: Platform!
     }
@@ -151,6 +152,7 @@ const typeDefs = gql`
         boardCreate(
             platform: String!
             hostname: String!
+            ip: String!
             description: String): Board!
         dockerImageCreate(
             platformId: Int!
