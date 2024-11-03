@@ -8,6 +8,7 @@ const config = require('../config')
 // use 'utf8' to get string instead of byte array  (512 bit key)
 const grid_service_public_key  = fs.readFileSync(config.GRID_SERVICE_PUBLIC_KEY_FILE, 'utf8'); 
 const workspace_manager_public_key  = fs.readFileSync(config.WORKSPACE_MANAGER_PUBLIC_KEY_FILE, 'utf8'); 
+const authentication_manager_public_key  = fs.readFileSync(config.AUTHENTICATION_MANAGER_PUBLIC_KEY_FILE, 'utf8'); 
 
 //I DONT NEED TO USE REQ HERE!
 module.exports.checkAuth = (auth_token, endpoint) => {
@@ -32,6 +33,9 @@ module.exports.checkAuth = (auth_token, endpoint) => {
                 } else 
                 if(endpoint == config.WORKSPACE_MANAGER_ENDPOINT) {
                     key = workspace_manager_public_key;
+                } else 
+                if(endpoint == config.AUTHENTICATION_MANAGER_ENDPOINT) {
+                    key = authentication_manager_public_key;
                 } 
                 
                 user = jwt.verify(token, key, verifyOptions);

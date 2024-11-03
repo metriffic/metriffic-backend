@@ -51,6 +51,14 @@ module.exports = (sequelize, DataTypes) => {
       type: DataTypes.STRING,
       allowNull: false
     },
+    bastionKey: {
+      type: DataTypes.STRING,
+      allowNull: true
+    },
+    userKey: {
+      type: DataTypes.STRING,
+      allowNull: true
+    },
 }, { timestamps: false });
   User.associate = function (models) {
     User.hasMany(models.Session);

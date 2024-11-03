@@ -24,11 +24,19 @@ function generateToken(user) {
                 id: user.id,
                 email: user.email,
                 username: user.username,
+                user_key: user.userKey,
                 role: user.role,
             }, SECRET_KEY, signOptions);
 }
 
 module.exports = {
+    Query: {
+        async user(root, { username }, { models }) {
+            return models.User.findOne({
+                    where: {username: username}
+	    })
+        }
+    },
     Mutation: {
         async login(root, { username, password }, { models, pubsub }) {
 

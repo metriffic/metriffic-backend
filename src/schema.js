@@ -16,6 +16,8 @@ const typeDefs = gql`
         lastLoggedInAt: String!
         currentState: String!
         isEnabled: Int!
+        bastionKey: String
+        userKey: String
     }
 
     type Platform {
@@ -127,6 +129,7 @@ const typeDefs = gql`
         allSessions(
             platformName: String
             status: [String]): [Session]!
+        user(username: String): User
         allBoards(platformName: String): [Board!]!
         sessionStatus(
             name: String): SessionStatusPayload!

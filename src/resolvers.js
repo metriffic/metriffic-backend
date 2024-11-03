@@ -23,6 +23,7 @@ const resolvers = {
 
     Query: {
         ...GeneralResolvers.Query,
+        ...UserResolvers.Query,
         ...PlatformResolvers.Query,
         ...SessionResolvers.Query,
         ...WorkspaceResolvers.Query,
