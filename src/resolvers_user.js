@@ -3,7 +3,7 @@ const jwt = require('jsonwebtoken')
 
 const { UserInputError } = require('apollo-server')
 
-const { validateRegisterInput, validateLoginInput } = require('./validators')
+const { validateRegisterInput, validateLoginInput, validateLoginToken } = require('./validators')
 const { checkAuth } = require('./check_auth')
 const { Roles, States } = require('../models/user')
 const { SECRET_KEY, AUTH_ALGORITHM } = require('../config')
@@ -38,12 +38,12 @@ module.exports = {
         }
     },
     Mutation: {
-        async login(root, { username, password }, { models, pubsub }) {
+        async login(root, { username, token }, { models, pubsub }) {
 
-            const {errors, valid} = validateLoginInput(username, password);
-            if(!valid) {
-                throw new UserInputError('Login error', {errors});
-            }
+            //const {errors, valid} = validateLoginToken(username, token);
+            //if(!valid) {
+            //    throw new UserInputError('Login error', {errors});
+            //}
 
             var user = null;
 
@@ -51,18 +51,19 @@ module.exports = {
                     where: {username:username}
             }).then(ret => {
                 if (!ret) {
-                    errors.general =  errors.general = 'Account with this username doesn\'t exists';
+                    const errors = { general: 'Account with this username doesn\'t exists' };
                     throw new UserInputError('Unknown username', { errors }); 
                 }
                 // TODO check if the user is enabled...
                 return ret;
             }).then(ret => {
                 user = ret;
-                return bcrypt.compare(password, user.get().password);
-            }).then(match => {
-                if(!match) {
-                    errors.general =  errors.general = 'Wrong Credentials';
-                    throw new UserInputError('Wrong credentials', { errors }); 
+                //return bcrypt.compare(password, user.get().password);
+		return validateLoginToken(username, token, user.get().userKey);
+            }).then(token_validation => {
+		console.log('VALIDATION', JSON.stringify(token_validation))
+                if(!token_validation.valid) {
+                    throw new UserInputError('Wrong credentials', token_validation.errors); 
                 }                
                 pubsub.publish(Channel.USER, { subsUser: { mutation: States.LOGGEDIN, data: user.get() }});
 

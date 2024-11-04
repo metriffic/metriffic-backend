@@ -11,7 +11,8 @@
     "jsonwebtoken": "^8.5.1",
     "sequelize": "^5.21.7",
     "sequelize-cli": "^5.5.1",
-    "sqlite3": "^4.2.0"
+    "sqlite3": "^4.2.0",
+    "ssh-key-to-pem": "^0.11.1"
   },
   "scripts": {
     "reset_db": "./cleanup.sh",

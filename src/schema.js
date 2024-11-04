@@ -146,7 +146,7 @@ const typeDefs = gql`
             username: String!): User!
         login(
             username: String!
-            password: String!): User!
+            token: String!): User!
         logout: String!
     
         platformCreate(
