@@ -101,7 +101,7 @@ const typeDefs = gql`
     }
     type RSyncRequestPayload {   
         username: String
-        password: String
+        public_key: String
     }
     type DataSubsPayload {   
         message: String!
@@ -133,7 +133,7 @@ const typeDefs = gql`
         allBoards(platformName: String): [Board!]!
         sessionStatus(
             name: String): SessionStatusPayload!
-        rsyncRequest: String!
+        rsyncRequest: Boolean!
     }
 
     type Mutation {
