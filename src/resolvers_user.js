@@ -39,16 +39,9 @@ module.exports = {
     },
     Mutation: {
         async login(root, { username, token }, { models, pubsub }) {
-
-            //const {errors, valid} = validateLoginToken(username, token);
-            //if(!valid) {
-            //    throw new UserInputError('Login error', {errors});
-            //}
-
             var user = null;
-
             return models.User.findOne({
-                    where: {username:username}
+                where: {username:username}
             }).then(ret => {
                 if (!ret) {
                     const errors = { general: 'Account with this username doesn\'t exists' };
@@ -56,12 +49,10 @@ module.exports = {
                 }
                 // TODO check if the user is enabled...
                 return ret;
-            }).then(ret => {
-                user = ret;
-                //return bcrypt.compare(password, user.get().password);
-		return validateLoginToken(username, token, user.get().userKey);
+            }).then(user => {
+        		return validateLoginToken(username, token, user.get().userKey);
             }).then(token_validation => {
-		console.log('VALIDATION', JSON.stringify(token_validation))
+                console.log('VALIDATION', JSON.stringify(token_validation))
                 if(!token_validation.valid) {
                     throw new UserInputError('Wrong credentials', token_validation.errors); 
                 }                
@@ -94,58 +85,56 @@ module.exports = {
             });
         },
 
-        async register(root, { username, email, password, cpassword }, { models, pubsub }) {
-
-            const {errors, valid} = validateRegisterInput(username, email, password, cpassword);
-            if(!valid) {
-                throw new UserInputError('Registration error', {errors});
-            }
-
-            return models.User.findOne({
-                where: { username: username }
-            }).then(user => {
-                if (user) {
-                    throw new UserInputError('Username is taken', {
-                        errors : {
-                            username: 'Account with this username already exists'
-                        }
-                    })
-                }
-                return;
-            }).then(() => {
-                return bcrypt.hash(password, 12)
-            }).then(password => {
-                const now = new Date().toISOString();
-                return models.User.create({
-                    email,
-                    username,
-                    password,
-                    role: Roles.USER,
-                    createdAt: now,
-                    lastLoggedInAt: now,
-                    isEnabled: true,
-                    currentState: States.LOGGEDIN
-                });    
-            }).then(ret => {
-                const token = generateToken(ret);
-                const user = ret.get();
-                user.token = token;
-                pubsub.publish(Channel.USER, { subsUser: { mutation: 'ADDED', data: user }});
-                return user;
-            });
-        },
-        async unregister(root, { username }, { models, pubsub }) {
-            return models.User.findOne({
-                where: { username: username }
-            }).then(ret => {
-                const user = ret.get();
-                return ret.destroy()
-                .then(() => {
-                    pubsub.publish(Channel.USER, { subsUser: { mutation: 'DELETED', data: user }});
-                    return user;
-                });
-            }); 
-        },
+        // async register(root, { username, email, password, cpassword }, { models, pubsub }) {
+        //     const {errors, valid} = validateRegisterInput(username, email, password, cpassword);
+        //     if(!valid) {
+        //         throw new UserInputError('Registration error', {errors});
+        //     }
+        //     return models.User.findOne({
+        //         where: { username: username }
+        //     }).then(user => {
+        //         if (user) {
+        //             throw new UserInputError('Username is taken', {
+        //                 errors : {
+        //                     username: 'Account with this username already exists'
+        //                 }
+        //             })
+        //         }
+        //         return;
+        //     }).then(() => {
+        //         return bcrypt.hash(password, 12)
+        //     }).then(password => {
+        //         const now = new Date().toISOString();
+        //         return models.User.create({
+        //             email,
+        //             username,
+        //             password,
+        //             role: Roles.USER,
+        //             createdAt: now,
+        //             lastLoggedInAt: now,
+        //             isEnabled: true,
+        //             currentState: States.LOGGEDIN
+        //         });    
+        //     }).then(ret => {
+        //         const token = generateToken(ret);
+        //         const user = ret.get();
+        //         user.token = token;
+        //         pubsub.publish(Channel.USER, { subsUser: { mutation: 'ADDED', data: user }});
+        //         return user;
+        //     });
+        // },
+        // async unregister(root, { username }, { models, pubsub }) {
+        //     return models.User.findOne({
+        //         where: { username: username }
+        //     }).then(ret => {
+        //         const user = ret.get();
+        //         return ret.destroy()
+        //         .then(() => {
+        //             pubsub.publish(Channel.USER, { subsUser: { mutation: 'DELETED', data: user }});
+        //             return user;
+        //         });
+        //     }); 
+        // },
         
     },
 }

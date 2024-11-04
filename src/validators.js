@@ -51,13 +51,12 @@ module.exports.validateLoginInput = (
 }
 
 
-class JWTVerifier {
+class jwt_verifier {
   constructor(public_key) {
-    // Convert OpenSSH public key to PEM format
     this.public_key = sshKeyToPEM(public_key);
   }
 
-  decodeBase64Url(input) {
+  decode_b64(input) {
     // Convert base64url to base64
     let base64 = input.replace(/-/g, '+').replace(/_/g, '/');
     // Add padding if necessary
@@ -69,43 +68,33 @@ class JWTVerifier {
 
   verify(token) {
       // Split the JWT into parts
-      const [headerB64, payloadB64, signatureB64] = token.split('.');
-      
-      if (!headerB64 || !payloadB64 || !signatureB64) {
+      const [header_b64, payload_b64, signature_b64] = token.split('.');
+      if (!header_b64 || !payload_b64 || !signature_b64) {
         throw new Error('Invalid token format');
       }
-
       // Decode header and payload
-      const header = JSON.parse(this.decodeBase64Url(headerB64).toString());
-      const payload = JSON.parse(this.decodeBase64Url(payloadB64).toString());
-
+      const header = JSON.parse(this.decode_b64(header_b64).toString());
+      const payload = JSON.parse(this.decode_b64(payload_b64).toString());
       // Verify algorithm
       if (header.alg !== 'RS256') {
-        throw new Error('Unsupported algorithm');
+          throw new Error('Unsupported algorithm');
       }
-
       // Create verification input (header.payload)
-      const verifyInput = `${headerB64}.${payloadB64}`;
-
+      const verifyInput = `${header_b64}.${payload_b64}`;
       // Decode signature
-      const signature = this.decodeBase64Url(signatureB64);
-
+      const signature = this.decode_b64(signature_b64);
       // Create verifier
       const verifier = crypto.createVerify('SHA256');
       verifier.update(verifyInput);
-
       // Verify signature
       const isValid = verifier.verify(this.public_key, signature);
-
       if (!isValid) {
-        throw 'Invalid signature';
+          throw 'Invalid signature';
       }
-
       // Check expiration
       if (payload.exp && Date.now() >= payload.exp * 1000) {
-        throw new Error('Token has expired');
+          throw new Error('Token has expired');
       }
-
       return payload;
   }
 }
@@ -122,9 +111,8 @@ module.exports.validateLoginToken = (
     if(username.trim() === '') {
         errors.username = 'Username must not be empty';
     }
-
     try {
-      const verifier = new JWTVerifier(public_key)
+      const verifier = new jwt_verifier(public_key)
       payload = verifier.verify(token);
       //console.log('Verification result:', payload);
     } catch (e) {

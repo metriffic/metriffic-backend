@@ -12,7 +12,6 @@ const authentication_manager_public_key  = fs.readFileSync(config.AUTHENTICATION
 
 //I DONT NEED TO USE REQ HERE!
 module.exports.checkAuth = (auth_token, endpoint) => {
-    //const auth_token = req.headers.authorization;
     if(auth_token) {
         const token = auth_token.split('Bearer ')[1];
         if(token) {
