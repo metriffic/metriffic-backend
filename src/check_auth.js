@@ -6,6 +6,7 @@ const config = require('../config')
 
 
 // use 'utf8' to get string instead of byte array  (512 bit key)
+const web_client_public_key  = fs.readFileSync(config.WEB_CLIENT_PUBLIC_KEY_FILE, 'utf8'); 
 const grid_service_public_key  = fs.readFileSync(config.GRID_SERVICE_PUBLIC_KEY_FILE, 'utf8'); 
 const workspace_manager_public_key  = fs.readFileSync(config.WORKSPACE_MANAGER_PUBLIC_KEY_FILE, 'utf8'); 
 const authentication_manager_public_key  = fs.readFileSync(config.AUTHENTICATION_MANAGER_PUBLIC_KEY_FILE, 'utf8'); 
@@ -27,6 +28,9 @@ module.exports.checkAuth = (auth_token, endpoint) => {
                 if(endpoint == "cli") {
                     key = config.SECRET_KEY;
                 } else
+                if(endpoint == config.WEB_CLIENT_ENDPOINT) {
+                    key = web_client_public_key;
+                } else 
                 if(endpoint == config.GRID_SERVICE_ENDPOINT) {
                     key = grid_service_public_key;
                 } else 
