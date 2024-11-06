@@ -2,7 +2,7 @@ const { gql } = require('apollo-server')
 
 const typeDefs = gql`
 
-    type HandshakePayload {   
+    type HandshakePayload {
         api_version: String!
     }
 
@@ -66,55 +66,59 @@ const typeDefs = gql`
         session: Session!
     }
 
-    type UserSubsPayload {   
+    type UserSubsPayload {
         mutation: String!
         data: User!
     }
-    type SessionSubsPayload {   
+    type SessionSubsPayload {
         mutation: String!
         data: String!
     }
-    type AdminSubsPayload { 
-        username: String!  
+    type AdminSubsPayload {
+        username: String!
         command: String!
         data: String
     }
-    type SessionStatusPayload {   
+    type OTPPayload {
+        status: Boolean!
+        message: String!
+    }
+    type SessionStatusPayload {
         jobs: [Job]!
         state: String!
-    }   
-    type JobSubsPayload {   
+    }
+    type JobSubsPayload {
         mutation: String!
         data: Job!
-    }   
-    type BoardSubsPayload {   
+    }
+    type BoardSubsPayload {
         mutation: String!
         data: Board!
     }
-    type DockerImageSubsPayload {   
+    type DockerImageSubsPayload {
         mutation: String!
         data: DockerImage!
     }
-    type PlatformSubsPayload {   
+    type PlatformSubsPayload {
         mutation: String!
         data: Platform!
     }
-    type RSyncRequestPayload {   
+    type RSyncRequestPayload {
         username: String
         public_key: String
     }
-    type DataSubsPayload {   
+    type DataSubsPayload {
         message: String!
     }
-    type DockerImageSavePayload {   
+    type DockerImageSavePayload {
         status: String!
     }
 
-    type Subscription {    
+    type Subscription {
         subsUser: UserSubsPayload!
-        subsSession: SessionSubsPayload!  
-        subsAdmin: AdminSubsPayload!  
-        subsJob: JobSubsPayload!  
+        subsSession: SessionSubsPayload!
+        subsAdmin: AdminSubsPayload!
+        subsJob: JobSubsPayload!
         subsBoard: BoardSubsPayload!
         subsDockerImage: DockerImageSubsPayload!
         subsPlatform: PlatformSubsPayload!
@@ -130,6 +134,9 @@ const typeDefs = gql`
             platformName: String
             status: [String]): [Session]!
         user(username: String): User
+        verifyOTP(
+            username: String
+            otp: String): OTPPayload!
         allBoards(platformName: String): [Board!]!
         sessionStatus(
             name: String): SessionStatusPayload!
@@ -148,7 +155,14 @@ const typeDefs = gql`
             username: String!
             token: String!): User!
         logout: String!
-    
+        saveKeys(
+            username: String!
+            bastionKey: String!,
+            userKey: String!): User
+        saveOTP(
+            username: String!
+            otp: String!,
+            expiry: Int!): OTPPayload!
         platformCreate(
             name: String!,
             description: String): Platform!
@@ -173,7 +187,7 @@ const typeDefs = gql`
         sessionSave(
             name: String!
             dockerimage: String!
-            description: String): DockerImageSavePayload!    
+            description: String): DockerImageSavePayload!
         sessionUpdate(
             name: String!
             state: String!
