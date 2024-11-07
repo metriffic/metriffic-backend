@@ -49,7 +49,7 @@ module.exports = {
                     if(user.password !== otp) {
                         return { status: false, message: 'otp does not match...' };
                     }
-                    return { status: true, message: 'OTP verification is successful!' };
+                    return { status: true, user: user.get(), message: 'OTP verification is successful!' };
                 }
                 return { status: false, message: 'user does not exist...' };
             })
@@ -69,7 +69,7 @@ module.exports = {
                 return user;
             }).then(user => {
                 if(user) {
-                    return { status: true, message: 'OTP is saved!' };
+                    return { status: true, email: user.email, message: 'OTP is saved!' };
                 } else {
                     return { status: false, message: 'user does not exist...' };
                 }

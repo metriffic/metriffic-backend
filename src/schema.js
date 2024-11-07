@@ -79,9 +79,15 @@ const typeDefs = gql`
         command: String!
         data: String
     }
-    type OTPPayload {
+    type SaveOTPPayload {
+        status: Boolean!
+        email: String!
+        message: String!
+    }
+    type VerifyOTPPayload {
         status: Boolean!
         message: String!
+        user: User
     }
     type SessionStatusPayload {
         jobs: [Job]!
@@ -136,7 +142,7 @@ const typeDefs = gql`
         user(username: String): User
         verifyOTP(
             username: String
-            otp: String): OTPPayload!
+            otp: String): VerifyOTPPayload!
         allBoards(platformName: String): [Board!]!
         sessionStatus(
             name: String): SessionStatusPayload!
@@ -162,7 +168,7 @@ const typeDefs = gql`
         saveOTP(
             username: String!
             otp: String!,
-            expiry: Int!): OTPPayload!
+            expiry: Int!): SaveOTPPayload!
         platformCreate(
             name: String!,
             description: String): Platform!
