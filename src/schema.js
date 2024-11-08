@@ -81,7 +81,7 @@ const typeDefs = gql`
     }
     type SaveOTPPayload {
         status: Boolean!
-        email: String!
+        email: String
         message: String!
     }
     type VerifyOTPPayload {
