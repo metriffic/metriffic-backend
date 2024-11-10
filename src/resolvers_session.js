@@ -49,9 +49,21 @@ module.exports =  {
                 session_state = session.state;
                 return models.Job.findAll({
                     where: { sessionId: session.id }
-                })
+                });
             }).then(jobs => {
                 return {jobs: jobs, state: session_state}
+            });
+        },
+        async session (root, { name }, { models, payload }) {
+            const user = checkAuth(payload.authorization, payload.endpoint)
+            return models.Session.findOne({
+                where: {name: name}
+            }).then(session => {
+                if (!session) {
+                    const errors = {general: 'Unknown session'};
+                    throw new UserInputError('Session doesn\'t exist.', { errors }); 
+                }
+                return session.get(); 
             });
         },
     },
@@ -124,7 +136,7 @@ module.exports =  {
             }); 
         },
 
-        async sessionUpdate (root, { name, state }, { models, pubsub, payload }) {
+        async sessionUpdateState (root, { name, state }, { models, pubsub, payload }) {
             const user = checkAuth(payload.authorization, payload.endpoint)
             return models.Session.findOne({
                 where: {name: name}
@@ -144,6 +156,24 @@ module.exports =  {
                     platform_id: session.platformId,
                 };
                 pubsub.publish(Channel.SESSION, { subsSession: { mutation: 'UPDATED', data: JSON.stringify(data) }});
+                return session.save();
+            }).then(session => {
+                return session.reload(); 
+            });
+        },
+
+        async sessionUpdateCommand (root, { name, command }, { models, pubsub, payload }) {
+            const user = checkAuth(payload.authorization, payload.endpoint)
+            return models.Session.findOne({
+                where: {name: name}
+            }).then(session => {
+                if (!session) {
+                    const errors = { general: 'Unknown session' };
+                    throw new UserInputError('Session doesn\'t exist.', { errors }); 
+                }
+                session.command = command;
+                // not really needed, the only user of this is metriffic client
+                //pubsub.publish(Channel.SESSION, { subsSession: { mutation: 'UPDATED', data: JSON.stringify(data) }});
                 return session.save();
             }).then(session => {
                 return session.reload(); 
@@ -183,18 +213,28 @@ module.exports =  {
 
         async jobCreate (root, { sessionId, datasets }, { models, payload }) {
             const user = checkAuth(payload.authorization, payload.endpoint)
-            const datasets_parsed = JSON.parse(datasets);
-                const submitted_jobs = [];
-                const promises = datasets_parsed.map(dataset => {
+            if(!datasets) {
                 return models.Job.create({ 
                     sessionId, 
                     dataset,
                     state : 'SUBMITTED'
                 }).then(job => {
-                    submitted_jobs.push(job);
+                    return [job];
                 });
-            });
-            return Promise.all(promises).then(() => { return submitted_jobs });
+            } else {
+                const datasets_parsed = JSON.parse(datasets);
+                    const submitted_jobs = [];
+                    const promises = datasets_parsed.map(dataset => {
+                    return models.Job.create({ 
+                        sessionId, 
+                        dataset,
+                        state : 'SUBMITTED'
+                    }).then(job => {
+                        submitted_jobs.push(job);
+                    });
+                });
+                return Promise.all(promises).then(() => { return submitted_jobs });
+            }
         },
 
         async jobUpdate (root, { id, state }, { models, pubsub, payload }) {

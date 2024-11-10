@@ -146,6 +146,8 @@ const typeDefs = gql`
         allBoards(platformName: String): [Board!]!
         sessionStatus(
             name: String): SessionStatusPayload!
+        session(
+            name: String): Session
         rsyncRequest: Boolean!
     }
 
@@ -193,14 +195,18 @@ const typeDefs = gql`
         sessionSave(
             name: String!
             dockerimage: String!
-            description: String): DockerImageSavePayload!
-        sessionUpdate(
+            description: String): DockerImageSavePayload!    
+        sessionUpdateState(
             name: String!
             state: String!
             ): Session!
+        sessionUpdateCommand(
+            name: String!
+            command: String
+            ): Session!
         jobCreate(
             sessionId: Int!
-            datasets: String!): [Job!]!
+            datasets: String): [Job!]!
         jobUpdate(
             id: Int!
             state: String!
