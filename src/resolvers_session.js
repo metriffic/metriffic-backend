@@ -120,6 +120,7 @@ module.exports =  {
             }).then(session => {
                 const data = {
                     username: user.username,
+                    user_id: user.user_id,
                     user_key: user.user_key,
                     session_id: session.id, 
                     session_name : session.name,

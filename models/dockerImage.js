@@ -16,6 +16,7 @@ module.exports = (sequelize, DataTypes) => {
   }, { timestamps: false });
   DockerImage.associate = function (models) {
     DockerImage.belongsTo(models.Platform, { foreignKey: 'platformId' })
+    DockerImage.belongsTo(models.User, { foreignKey: 'userId' })
   }
   return DockerImage;
 };

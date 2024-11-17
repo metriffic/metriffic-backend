@@ -182,6 +182,7 @@ const typeDefs = gql`
         dockerImageCreate(
             platformId: Int!
             name: String!
+            userId: Int!
             options: String
             description: String): DockerImage!
         sessionCreate(

@@ -25,12 +25,17 @@ module.exports = {
                 });
             }
         },
-        async allDockerImages (root, { platformName }, { models }) {
+        async allDockerImages (root, { platformName, userId }, { models }) {
             if(platformName === "") {
-                return models.DockerImage.findAll();
+                return models.DockerImage.findAll({ 
+                    where: { [Op.or]: [{userId: ''}, {userId: userId}]}
+                });
             } else {
                 return models.Platform.findOne({
-                    where: {name: platformName}
+                    where: {
+                        name: platformName,
+                        [Op.or]: [{userId: ''}, {userId: userId}]
+                    }
                 }).then(platform => {
                     if (!platform) {
                         const errors = {general: 'Unsupported platform'};
@@ -64,7 +69,7 @@ module.exports = {
                     return ret;
                 });            
         },
-        async dockerImageCreate (root, { platformId, name, options, description }, { models, pubsub }) {
+        async dockerImageCreate (root, { platformId, userId, name, options, description }, { models, pubsub }) {
             return models.Platform.findOne({
                 where: {id: platformId}
             }).then(ret => {
@@ -77,6 +82,7 @@ module.exports = {
 
                 return models.DockerImage.create({ 
                         platformId, 
+                        userId,
                         name, 
                         options,
                         description 
