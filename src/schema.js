@@ -181,8 +181,8 @@ const typeDefs = gql`
             description: String): Board!
         dockerImageCreate(
             platformId: Int!
-            name: String!
             userId: Int!
+            name: String!
             options: String
             description: String): DockerImage!
         sessionCreate(
@@ -196,7 +196,7 @@ const typeDefs = gql`
         sessionSave(
             name: String!
             dockerimage: String!
-            description: String): DockerImageSavePayload!    
+            description: String): DockerImageSavePayload!
         sessionUpdateState(
             name: String!
             state: String!

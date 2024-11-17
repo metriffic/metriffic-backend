@@ -1,6 +1,7 @@
 const { Channel }  = require('./resolvers_subscription');
 const { checkAuth } = require('./check_auth');
 const { UserInputError } = require('apollo-server');
+const op = require('sequelize').Op
 
 module.exports = {
     Query: {
@@ -17,7 +18,7 @@ module.exports = {
                 }).then(platform => {
                     if (!platform) {
                         const errors = {general: 'Unsupported platform'};
-                        throw new UserInputError('Unknown platform', { errors }); 
+                        throw new UserInputError('Unknown platform', { errors });
                     }
                     return models.Board.findAll({
                         where: { platformId: platform.id }
@@ -25,21 +26,22 @@ module.exports = {
                 });
             }
         },
-        async allDockerImages (root, { platformName, userId }, { models }) {
+        async allDockerImages (root, { platformName }, { req, payload, models }) {
+            const user = checkAuth(payload.authorization, payload.endpoint)
             if(platformName === "") {
-                return models.DockerImage.findAll({ 
-                    where: { [Op.or]: [{userId: ''}, {userId: userId}]}
+                return models.DockerImage.findAll({
+                    where: { [op.or]: [{userId: null}, {userId: user.id}]}
                 });
             } else {
                 return models.Platform.findOne({
                     where: {
                         name: platformName,
-                        [Op.or]: [{userId: ''}, {userId: userId}]
+                        [op.or]: [{userId: null}, {userId: user.id}]
                     }
                 }).then(platform => {
                     if (!platform) {
                         const errors = {general: 'Unsupported platform'};
-                        throw new UserInputError('Unknown platform', { errors }); 
+                        throw new UserInputError('Unknown platform', { errors });
                     }
                     return models.DockerImage.findAll({
                         where: { platformId: platform.id }
@@ -56,18 +58,18 @@ module.exports = {
             }).then(ret => {
                 pubsub.publish(Channel.PLATFORM, { subsPlatform: { mutation: 'ADDED', data: ret.get() }});
                 return ret;
-            }); 
+            });
         },
         async boardCreate (root, { platformId, hostname, ip, description }, { models, pubsub }) {
-            return models.Board.create({ 
-                    platformId, 
-                    hostname, 
+            return models.Board.create({
+                    platformId,
+                    hostname,
 		    ip,
-                    description 
+                    description
                 }).then(ret => {
                     pubsub.publish(Channel.BOARD, { subsBoard: { mutation: 'ADDED', data: ret.get() }});
                     return ret;
-                });            
+                });
         },
         async dockerImageCreate (root, { platformId, userId, name, options, description }, { models, pubsub }) {
             return models.Platform.findOne({
@@ -75,22 +77,22 @@ module.exports = {
             }).then(ret => {
                 if (ret == null) {
                     const errors = { general: 'Unknown platform'};
-                    throw new UserInputError('Platform id# \'' + platformId + '\' doesn\'t exists. Please choose one of the supported platforms.', { errors }); 
+                    throw new UserInputError('Platform id# \'' + platformId + '\' doesn\'t exists. Please choose one of the supported platforms.', { errors });
                 }
                 // platform exists, check dockerimage exists as well
                 uplatform = ret.get();
 
-                return models.DockerImage.create({ 
-                        platformId, 
+                return models.DockerImage.create({
+                        platformId,
                         userId,
-                        name, 
+                        name,
                         options,
-                        description 
+                        description
                     });
             }).then(ret => {
                     pubsub.publish(Channel.DOCKERIMAGE, { subsDockerImage: { mutation: 'ADDED', data: ret.get() }});
                     return ret;
-                });            
+                });
         },
     },
 }
