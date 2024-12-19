@@ -2,16 +2,16 @@
 module.exports = (sequelize, DataTypes) => {
   const Job = sequelize.define('Job', {
     dataset: {
-        type: DataTypes.STRING, 
+        type: DataTypes.STRING,
         allowNull: false,
     },
     state: {
-      type: DataTypes.STRING, 
+      type: DataTypes.STRING,
       allowNull: false,
     },
   },  { timestamps: false });
   Job.associate = function (models) {
-    Job.belongsTo(models.Session,  { foreignKey: 'sessionId' });
+    Job.belongsTo(models.Session,  { foreignKey: 'sessionId', as: 'session' });
     //Job.hasOne(models.Board, {foreignKey: 'boardId'});
   }
   return Job;

@@ -6,15 +6,15 @@ const op = require('sequelize').Op
 
 module.exports =  {
     Query: {
-        async allSessions (root, { platformName, status}, { models, pubsub, payload }) {
+        async allSessions (root, { platformName, state}, { models, pubsub, payload }) {
             const user = checkAuth(payload.authorization, payload.endpoint);
             // for cli endpoint its the actual user id, for grid-service it's null
             const filter = user.id ? [ { userId: user.id } ] : [];
 
-            if(status.length) {
-                const status_filter = []
-                status.forEach(s => { status_filter.push( { state : s } ) })
-                filter.push( {[op.or] : status_filter } )
+            if(state.length) {
+                const state_filter = []
+                state.forEach(s => { state_filter.push( { state : s } ) })
+                filter.push( {[op.or] : state_filter } )
             }
 
             if(!platformName) {
@@ -66,6 +66,14 @@ module.exports =  {
                 return session.get();
             });
         },
+
+        async jobsGet(root, { sessionId }, { models, payload }) {
+            const user = checkAuth(payload.authorization, payload.endpoint)
+            return await models.Job.findAll({
+                where: { sessionId },
+            });
+        }
+
     },
 
     Mutation: {

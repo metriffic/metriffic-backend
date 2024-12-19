@@ -36,8 +36,8 @@ const resolvers = {
         ...SessionResolvers.Mutation,
         ...AdminResolvers.Mutation,
 
-        // this is only allowed from 
-        ...GridServiceResolvers.Mutation,   
+        // this is only allowed from
+        ...GridServiceResolvers.Mutation,
     },
 
     Platform: {
@@ -62,13 +62,14 @@ const resolvers = {
         }
     },
     Job: {
-        async session (job) {
+        async session (job, args, { models }) {
             return models.Session.findByPk(job.sessionId)
                 .then(function(ret){
                     return ret;
                 });
         }
     },
+
     Session: {
         async jobs(session, {}, {models}) {
             //return session.getJobs()
@@ -76,21 +77,21 @@ const resolvers = {
                 where: { sessionId: session.id }
             })
         },
-        async platform(session, {}, {models}) { 
+        async platform(session, {}, {models}) {
             //return session.getPlatform()
             return models.Platform.findByPk(session.platformId)
                 .then(function(ret){
                     return ret;
                 });
         },
-        async dockerImage(session, {}, {models}) { // ERROR 
+        async dockerImage(session, {}, {models}) { // ERROR
             //return session.getDockerImage()
             return models.DockerImage.findByPk(session.dockerImageId)
                 .then(function(ret){
                     return ret;
                 });
         },
-        async user(session, {}, {models}) { // ERROR 
+        async user(session, {}, {models}) { // ERROR
             //return session.getDockerImage()
             return models.User.findByPk(session.userId)
                 .then(function(ret){

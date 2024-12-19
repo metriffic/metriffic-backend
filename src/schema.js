@@ -138,7 +138,7 @@ const typeDefs = gql`
         allDockerImages(platformName: String): [DockerImage!]!
         allSessions(
             platformName: String
-            status: [String]): [Session]!
+            state: [String]): [Session]!
         user(username: String): User
         verifyOTP(
             username: String
@@ -148,6 +148,9 @@ const typeDefs = gql`
             name: String): SessionStatusPayload!
         session(
             name: String): Session
+        jobsGet (
+            sessionId: Int!
+            ): [Job!]!
         rsyncRequest: Boolean!
     }
 
