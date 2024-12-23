@@ -78,7 +78,7 @@ module.exports =  {
 
     Mutation: {
 
-        async sessionCreate (root, { platform, dockerimage, name, type, command, datasets, max_jobs }, { models, pubsub, payload }) {
+        async sessionCreate (root, { platform, dockerimage, name, type, command, datasetSplit, maxJobs }, { models, pubsub, payload }) {
             const user = checkAuth(payload.authorization, payload.endpoint);
             var uplatform = null;
             var udockerimage = null;
@@ -122,8 +122,8 @@ module.exports =  {
                     type: type.toUpperCase(),
                     state : 'SUBMITTED',
                     command,
-                    datasets,
-                    max_jobs
+                    datasetSplit,
+                    maxJobs
                 });
             }).then(session => {
                 const data = {
@@ -137,8 +137,8 @@ module.exports =  {
                     docker_image: udockerimage.name,
                     docker_options: udockerimage.options,
                     command: session.command,
-                    datasets: session.datasets,
-                    max_jobs: session.max_jobs,
+                    datasetSplit: session.datasetSplit,
+                    maxJobs: session.maxJobs,
                 };
                 pubsub.publish(Channel.SESSION, { subsSession: { mutation: 'ADDED', data: JSON.stringify(data) }});
                 return session;
@@ -191,11 +191,9 @@ module.exports =  {
 
         async sessionSave (root, { name, dockerimage, description }, { models, pubsub, payload }) {
             const user = checkAuth(payload.authorization, payload.endpoint)
-            console.log('SAVE input', user, name)
             return models.Session.findOne({
                 where: {name: name}
             }).then(session => {
-                console.log('SAVE session', session)
                 if (!session) {
                     const errors = { general: 'Unknown session' };
                     throw new UserInputError('Session doesn\'t exist.', { errors });
@@ -222,28 +220,27 @@ module.exports =  {
             });
         },
 
-        async jobCreate (root, { sessionId, datasets }, { models, payload }) {
+        async jobsCreate (root, { sessionId, datasetSplit }, { models, payload }) {
             const user = checkAuth(payload.authorization, payload.endpoint)
-            if(!datasets) {
+            if(!datasetSplit) {
                 return models.Job.create({
                     sessionId,
-                    dataset,
                     state : 'SUBMITTED'
                 }).then(job => {
                     return [job];
                 });
             } else {
-                const datasets_parsed = JSON.parse(datasets);
-                    const submitted_jobs = [];
-                    const promises = datasets_parsed.map(dataset => {
-                    return models.Job.create({
+                const submitted_jobs = [];
+                const promises = [];
+                for (let dataset_chunk = 0; dataset_chunk < datasetSplit; ++dataset_chunk) {
+                    promises.push(models.Job.create({
                         sessionId,
-                        dataset,
-                        state : 'SUBMITTED'
+                        datasetChunk: dataset_chunk,
+                        state: 'SUBMITTED'
                     }).then(job => {
                         submitted_jobs.push(job);
-                    });
-                });
+                    }));
+                }
                 return Promise.all(promises).then(() => { return submitted_jobs });
             }
         },

@@ -51,10 +51,10 @@ const typeDefs = gql`
         type: String!
         state: String!
         command: String!
-        max_jobs: Int!
+        maxJobs: Int!
         jobs: [Job!]!
         user: User!
-        datasets: String!
+        datasetSplit: Int
         platform: Platform!
         dockerImage: DockerImage!
     }
@@ -62,7 +62,7 @@ const typeDefs = gql`
     type Job {
         id: Int!
         state: String!
-        dataset: String!
+        datasetChunk: Int
         session: Session!
     }
 
@@ -194,8 +194,8 @@ const typeDefs = gql`
             name: String!
             type: String!
             command: String!
-            datasets: String!
-            max_jobs: Int): Session!
+            datasetSplit: Int!
+            maxJobs: Int): Session!
         sessionSave(
             name: String!
             dockerimage: String!
@@ -208,9 +208,9 @@ const typeDefs = gql`
             name: String!
             command: String
             ): Session!
-        jobCreate(
+        jobsCreate(
             sessionId: Int!
-            datasets: String): [Job!]!
+            datasetSplit: Int): [Job!]!
         jobUpdate(
             id: Int!
             state: String!

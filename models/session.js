@@ -19,17 +19,17 @@ module.exports = (sequelize, DataTypes) => {
       type: DataTypes.STRING,
       allowNull: false
     },
-    max_jobs: {
-        type: DataTypes.STRING,
+    maxJobs: {
+        type: DataTypes.INTEGER,
         allowNull: true,
         default: 1
     },
-    datasets: {
-        type: DataTypes.STRING, // json string
-        allowNull: false,
+    datasetSplit: {
+        type: DataTypes.INTEGER,
+        allowNull: true,
     },
     command: {
-        type: DataTypes.STRING, // json string
+        type: DataTypes.STRING,
         allowNull: false,
     }
   },  { timestamps: false });

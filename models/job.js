@@ -1,9 +1,9 @@
 'use strict';
 module.exports = (sequelize, DataTypes) => {
   const Job = sequelize.define('Job', {
-    dataset: {
-        type: DataTypes.STRING,
-        allowNull: false,
+    datasetChunk: {
+        type: DataTypes.INTEGER,
+        allowNull: true,
     },
     state: {
       type: DataTypes.STRING,
