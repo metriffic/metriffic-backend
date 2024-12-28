@@ -46,7 +46,7 @@ module.exports = {
                     if(current_time_sec > user.password_expiry) {
                         return { status: false, message: 'OTP is expired...' };
                     }
-                    if(user.password !== otp) {
+                    if(user.token !== otp) {
                         return { status: false, message: 'otp does not match...' };
                     }
                     return { status: true, user: user.get(), message: 'OTP verification is successful!' };
@@ -62,7 +62,7 @@ module.exports = {
                     where: {username: username}
             }).then(user => {
                 if (user) {
-                    user.password = otp;
+                    user.token = otp;
                     user.password_expiry = expiry;
                     return user.save();
                 }
@@ -141,44 +141,41 @@ module.exports = {
             });
         },
 
-        // async register(root, { username, email, password, cpassword }, { models, pubsub }) {
-        //     const {errors, valid} = validateRegisterInput(username, email, password, cpassword);
-        //     if(!valid) {
-        //         throw new UserInputError('Registration error', {errors});
-        //     }
-        //     return models.User.findOne({
-        //         where: { username: username }
-        //     }).then(user => {
-        //         if (user) {
-        //             throw new UserInputError('Username is taken', {
-        //                 errors : {
-        //                     username: 'Account with this username already exists'
-        //                 }
-        //             })
-        //         }
-        //         return;
-        //     }).then(() => {
-        //         return bcrypt.hash(password, 12)
-        //     }).then(password => {
-        //         const now = new Date().toISOString();
-        //         return models.User.create({
-        //             email,
-        //             username,
-        //             password,
-        //             role: Roles.USER,
-        //             createdAt: now,
-        //             lastLoggedInAt: now,
-        //             isEnabled: true,
-        //             currentState: States.LOGGEDIN
-        //         });
-        //     }).then(ret => {
-        //         const token = generateToken(ret);
-        //         const user = ret.get();
-        //         user.token = token;
-        //         pubsub.publish(Channel.USER, { subsUser: { mutation: 'ADDED', data: user }});
-        //         return user;
-        //     });
-        // },
+        async register(root, { username, email }, { models, pubsub }) {
+            const {errors, valid} = validateRegisterInput(username, email);
+            if(!valid) {
+                throw new UserInputError('Registration error', {errors});
+            }
+            return models.User.findOne({
+                where: { username: username }
+            }).then(user => {
+                if (user) {
+                    throw new UserInputError('Username is taken', {
+                        errors : {
+                            username: 'Account with this username already exists'
+                        }
+                    })
+                }
+                return;
+            }).then(() => {
+                const now = new Date().toISOString();
+                return models.User.create({
+                    email,
+                    username,
+                    role: Roles.USER,
+                    createdAt: now,
+                    lastLoggedInAt: now,
+                    isEnabled: true,
+                    currentState: States.LOGGEDIN
+                });
+            }).then(ret => {
+                const token = generateToken(ret);
+                const user = ret.get();
+                user.token = token;
+                pubsub.publish(Channel.USER, { subsUser: { mutation: 'ADDED', data: user }});
+                return user;
+            });
+        },
         // async unregister(root, { username }, { models, pubsub }) {
         //     return models.User.findOne({
         //         where: { username: username }

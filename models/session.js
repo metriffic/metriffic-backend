@@ -24,6 +24,10 @@ module.exports = (sequelize, DataTypes) => {
         allowNull: true,
         default: 1
     },
+    createdAt: {
+        type: DataTypes.INTEGER,
+        allowNull: false
+    },
     datasetSplit: {
         type: DataTypes.INTEGER,
         allowNull: true,

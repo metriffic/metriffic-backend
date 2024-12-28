@@ -11,7 +11,7 @@ const typeDefs = gql`
         username: String!
         email: String!
         role: String!
-        token: String!
+        token: String
         createdAt: String!
         lastLoggedInAt: String!
         currentState: String!
@@ -57,6 +57,7 @@ const typeDefs = gql`
         datasetSplit: Int
         platform: Platform!
         dockerImage: DockerImage!
+        createdAt: Int!
     }
 
     type Job {
@@ -89,6 +90,7 @@ const typeDefs = gql`
         message: String!
         user: User
     }
+
     type SessionStatusPayload {
         jobs: [Job]!
         state: String!
@@ -157,9 +159,7 @@ const typeDefs = gql`
     type Mutation {
         register(
             username: String!
-            email: String!
-            password: String!
-            cpassword: String!): User!
+            email: String!): User!
         unregister(
             username: String!): User!
         login(

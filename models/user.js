@@ -1,5 +1,5 @@
 'use strict';
- 
+
 const Roles = {
   USER  : 'USER',
   ADMIN : 'ADMIN',
@@ -27,12 +27,12 @@ module.exports = (sequelize, DataTypes) => {
         type: DataTypes.STRING,
         allowNull: true
     },
-    password: {
+    token: {
       type: DataTypes.STRING,
-      allowNull: false
+      allowNull: true
     },
     role: {
-      type: DataTypes.STRING, 
+      type: DataTypes.STRING,
       allowNull: false
     },
     createdAt: {

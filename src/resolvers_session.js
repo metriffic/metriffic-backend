@@ -119,6 +119,7 @@ module.exports =  {
                     userId : user.id,
                     dockerImageId : udockerimage.id,
                     name,
+                    createdAt: Math.floor(Date.now() / 1000),
                     type: type.toUpperCase(),
                     state : 'SUBMITTED',
                     command,
@@ -137,8 +138,9 @@ module.exports =  {
                     docker_image: udockerimage.name,
                     docker_options: udockerimage.options,
                     command: session.command,
-                    datasetSplit: session.datasetSplit,
-                    maxJobs: session.maxJobs,
+                    dataset_split: session.datasetSplit,
+                    max_jobs: session.maxJobs,
+                    created_at: session.createdAt,
                 };
                 pubsub.publish(Channel.SESSION, { subsSession: { mutation: 'ADDED', data: JSON.stringify(data) }});
                 return session;
