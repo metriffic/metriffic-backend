@@ -118,6 +118,9 @@ const typeDefs = gql`
     type DataSubsPayload {
         message: String!
     }
+    type HeartBeatPayload{
+        beat_num: Int!
+    }
     type DockerImageSavePayload {
         status: String!
     }
@@ -132,6 +135,7 @@ const typeDefs = gql`
         subsPlatform: PlatformSubsPayload!
         subsRSync: RSyncRequestPayload!
         subsData: DataSubsPayload!
+        subsHeartBeat: HeartBeatPayload!
     }
 
     type Query {

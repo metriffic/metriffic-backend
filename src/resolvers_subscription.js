@@ -11,6 +11,7 @@ const Channel = {
     DATA        : 'DATA',
     ADMIN       : 'ADMIN',
     RSYNC_REQUEST : 'RSYNC_REQUEST', 
+    HEARTBEAT    : 'HEARTBEAT'
 }   
 
 const AllSubscriptions = {    
@@ -63,6 +64,9 @@ const AllSubscriptions = {
                             //console.log('-------------I', info)
                             return true
                         })*/
+    }, 
+    subsHeartBeat: {
+        subscribe: (root, args, { pubsub }) => pubsub.asyncIterator(Channel.HEARTBEAT),
     }, 
 }
 

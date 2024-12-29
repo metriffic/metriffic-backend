@@ -3,6 +3,7 @@ const resolvers = require('./src/resolvers')
 const models = require('./models')
 const config = require('./config')
 const { initAuth } = require('./src/check_auth');
+const { Channel }  = require('./src/resolvers_subscription');
 const { PubSub, ApolloServer } = require('apollo-server')
 
 const pubsub = new PubSub();
@@ -13,7 +14,7 @@ const server = new ApolloServer({
   playground: false,
   introspection: false,
   context: ({req, payload}) => ({
-              req, 
+              req,
               models,
               pubsub,
               payload
@@ -21,9 +22,14 @@ const server = new ApolloServer({
 })
 
 server
-  .listen(config.GQL_PORT)
-  .then(({ url }) => {
-    console.log('Started the server is on port ', config.GQL_PORT);
-  });
+    .listen(config.GQL_PORT)
+    .then(({ url }) => {
+            console.log('Started the server is on port ', config.GQL_PORT);
+            console.log('Starting heartbeat... ');
+            let beat_num = 0;
+            setInterval(() => {
+                pubsub.publish(Channel.HEARTBEAT, { subsHeartBeat: { beat_num: beat_num++}})
+            }, 300000);
+    });
 
-  
+
